@@ -56,7 +56,7 @@ public class Activity_Profile extends AppCompatActivity {
     Map<String, ArrayList<String>> mapCitiesInRegion = new HashMap<>();
     String region; //Так и не нашел способа локализовать переменную в методе
 
-    RadioButton radioButtonSex; //Так и не нашел способа локализовать переменную в методе
+    RadioButton radioButtonSex; //Так и не нашел способа локализовать переменную в методеhg
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -18,6 +18,13 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.EventListener;
 
 public class Activity_SignUp extends AppCompatActivity {
 
@@ -27,6 +34,9 @@ public class Activity_SignUp extends AppCompatActivity {
     private ImageView btn_back;
 
     private FirebaseAuth mAuth;
+
+    private String USER_KEY = "users";
+    private String userID = "10000";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,34 +60,46 @@ public class Activity_SignUp extends AppCompatActivity {
     }
 
     private void onClicks() {
-        btn_back.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(getApplicationContext(), Activity_First.class);
-                startActivity(intent);
-            }
+        btn_back.setOnClickListener(view -> {
+            Intent intent = new Intent(getApplicationContext(), Activity_First.class);
+            startActivity(intent);
         });
 
-        btn_sign_up.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                boolean validateEmail = checkValidateEmail();
-                boolean validatePassword = checkValidatePassword();
+        btn_sign_up.setOnClickListener(view -> {
+            boolean validateEmail = checkValidateEmail();
+            boolean validatePassword = checkValidatePassword();
 
-                if (validateEmail && validatePassword) {
-                    mAuth.createUserWithEmailAndPassword(email_edit.getText().toString(), password_edit.getText().toString())
-                            .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
-                            if (task.isSuccessful()) {
-                                Intent intent = new Intent(getApplicationContext(), Activity_Profile.class);
-                                startActivity(intent);
-                            } else {
-                                Toast.makeText(Activity_SignUp.this, "Данный e-mail уже зарегистрирован", Toast.LENGTH_SHORT).show();
-                            }
+            if (validateEmail && validatePassword) {
+                mAuth.createUserWithEmailAndPassword(email_edit.getText().toString(), password_edit.getText().toString())
+                        .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            DatabaseReference userDataBase = FirebaseDatabase.getInstance().getReference(USER_KEY);
+
+                            userDataBase.addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                    userID = String.valueOf(Integer.parseInt(userID) + snapshot.getChildrenCount());
+                                }
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError error) {
+                                }
+                            });
+
+                            Model_User newUser = new Model_User(userID, email_edit.getText().toString(),
+                                    "", "", "", "", 0);
+                            userDataBase.child(userID).setValue(newUser);
+
+                            Intent intent = new Intent(getApplicationContext(), Activity_Profile.class);
+                            startActivity(intent);
+
+                        } else {
+                            Toast.makeText(Activity_SignUp.this, "Данный e-mail уже зарегистрирован", Toast.LENGTH_SHORT).show();
                         }
-                    });
-                }
+
+                    }
+                });
             }
         });
     }
@@ -130,9 +152,5 @@ public class Activity_SignUp extends AppCompatActivity {
             btn_sign_up.setEnabled(true);
             return true;
         }
-    }
-
-    public void setChangeListener() {
-
     }
 }

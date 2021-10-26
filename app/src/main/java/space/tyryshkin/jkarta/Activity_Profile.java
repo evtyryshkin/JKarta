@@ -4,13 +4,10 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
-import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.content.res.ColorStateList;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -22,7 +19,6 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.DatePicker;
-import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
@@ -32,6 +28,7 @@ import android.widget.Toast;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -42,21 +39,33 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 
 public class Activity_Profile extends AppCompatActivity {
+
+    private String userID;
+    private String userEmail;
+    private String userLogin;
+    private String userCity;
+    private String userSex;
+    private String userBirthday;
+    private int userAvatar;
 
     private TextView avatar_text, login, city, sex, birthday;
     private RelativeLayout loginStroke, cityStroke, sexStroke, birthdayStroke;
     private Button btn_ready;
 
+    private FirebaseAuth mAuth;
+    private DatabaseReference userDataBase;
+    private String USER_KEY = "users";
+    private Model_User user;
+
     Map<String, ArrayList<String>> mapCitiesInRegion = new HashMap<>();
     String region; //Так и не нашел способа локализовать переменную в методе
 
-    RadioButton radioButtonSex; //Так и не нашел способа локализовать переменную в методеhg
+    RadioButton radioButtonSex; //Так и не нашел способа локализовать переменную в методе
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,38 +88,25 @@ public class Activity_Profile extends AppCompatActivity {
         sexStroke = findViewById(R.id.sexStroke);
         birthdayStroke = findViewById(R.id.birthdayStroke);
         btn_ready = findViewById(R.id.btn_ready);
+
+        mAuth = FirebaseAuth.getInstance();
+        userDataBase = FirebaseDatabase.getInstance().getReference(USER_KEY);
+        loadProfileDataFromFirebase();
     }
 
     private void onClicks() {
-        loginStroke.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                openDialogLogin();
-            }
-        });
-        cityStroke.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                openDialogsRegionAndCities(R.layout.dialog_change_region, null);
-            }
-        });
-        sexStroke.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                openDialogSex();
-            }
-        });
-        birthdayStroke.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                openDialogBirthday();
-            }
-        });
-        btn_ready.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        loginStroke.setOnClickListener(view -> openDialogLogin());
 
-            }
+        cityStroke.setOnClickListener(view -> openDialogsRegionAndCities(R.layout.dialog_change_region, null));
+
+        sexStroke.setOnClickListener(view -> openDialogSex());
+
+        birthdayStroke.setOnClickListener(view -> openDialogBirthday());
+
+        btn_ready.setOnClickListener(view -> {
+            saveProfileDataToFirebase();
+            Intent intent = new Intent(Activity_Profile.this, Activity_General_Space_App.class);
+            startActivity(intent);
         });
     }
 
@@ -201,20 +197,12 @@ public class Activity_Profile extends AppCompatActivity {
             }
         });
 
-        save.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog.dismiss();
-                login.setText(edit.getText().toString());
-            }
+        save.setOnClickListener(view -> {
+            dialog.dismiss();
+            login.setText(Objects.requireNonNull(edit.getText()).toString());
         });
 
-        cancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog.dismiss();
-            }
-        });
+        cancel.setOnClickListener(view -> dialog.dismiss());
 
         dialog.show();
     }
@@ -228,35 +216,24 @@ public class Activity_Profile extends AppCompatActivity {
 
         next.setEnabled(false);
 
-        radio_group_list.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup radioGroup, int position) {
-                RadioButton radioButton = (RadioButton) radioGroup.findViewById(position);
-                if (previousDialog == null) {
-                    region = radioButton.getText().toString();
-                } else {
-                    city.setText(radioButton.getText().toString());
-                }
-                next.setEnabled(true);
+        radio_group_list.setOnCheckedChangeListener((RadioGroup.OnCheckedChangeListener) (radioGroup, position) -> {
+            RadioButton radioButton = (RadioButton) radioGroup.findViewById(position);
+            if (previousDialog == null) {
+                region = radioButton.getText().toString();
+            } else {
+                city.setText(radioButton.getText().toString());
             }
+            next.setEnabled(true);
         });
 
-        cancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        cancel.setOnClickListener(view -> dialog.dismiss());
+
+        next.setOnClickListener(view -> {
+            if (previousDialog == null) {
+                openDialogsRegionAndCities(R.layout.dialog_change_city, dialog);
+            } else {
+                previousDialog.dismiss();
                 dialog.dismiss();
-            }
-        });
-
-        next.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (previousDialog == null) {
-                    openDialogsRegionAndCities(R.layout.dialog_change_city, dialog);
-                } else {
-                    previousDialog.dismiss();
-                    dialog.dismiss();
-                }
             }
         });
 
@@ -304,19 +281,11 @@ public class Activity_Profile extends AppCompatActivity {
             }
         });
 
-        cancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog.dismiss();
-            }
-        });
+        cancel.setOnClickListener(view -> dialog.dismiss());
 
-        save.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                sex.setText(radioButtonSex.getText().toString());
-                dialog.dismiss();
-            }
+        save.setOnClickListener(view -> {
+            sex.setText(radioButtonSex.getText().toString());
+            dialog.dismiss();
         });
         dialog.show();
     }
@@ -443,12 +412,7 @@ public class Activity_Profile extends AppCompatActivity {
                 progressDialog.dismiss();
 
                 ArrayList<String> allRegionsArrayList = new ArrayList<>(mapCitiesInRegion.keySet());
-                Collections.sort(allRegionsArrayList, new Comparator<String>() {
-                    @Override
-                    public int compare(String s, String t1) {
-                        return s.compareToIgnoreCase(t1);
-                    }
-                });
+                Collections.sort(allRegionsArrayList, String::compareToIgnoreCase);
 
                 createRadioButtonsProgrammatically(radioGroup, allRegionsArrayList);
 
@@ -459,5 +423,49 @@ public class Activity_Profile extends AppCompatActivity {
             public void onCancelled(@NonNull DatabaseError error) {
             }
         });
+    }
+
+
+    private void loadProfileDataFromFirebase() {
+        userEmail = Objects.requireNonNull(mAuth.getCurrentUser()).getEmail();
+        //Toast.makeText(this, userEmail, Toast.LENGTH_SHORT).show();
+
+        userDataBase.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    String childEmail = String.valueOf(ds.child("email").getValue());
+
+                    if (userEmail.equals(childEmail)) {
+                        user = ds.getValue(Model_User.class);
+
+                        assert user != null;
+                        if (user.getLogin().equals("")) {
+                            login.setText(user.getID());
+                        } else {
+                            login.setText(user.getLogin());
+                        }
+                        city.setText(user.getCity());
+                        sex.setText(user.getSex());
+                        birthday.setText(user.getBirthday());
+                    }
+                    break;
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void saveProfileDataToFirebase() {
+        user.setLogin(login.getText().toString());
+        user.setCity(city.getText().toString());
+        user.setSex(sex.getText().toString());
+        user.setBirthday(birthday.getText().toString());
+
+        userDataBase.child(USER_KEY).child(userID).setValue(user);
     }
 }

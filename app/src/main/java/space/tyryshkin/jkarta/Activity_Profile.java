@@ -33,25 +33,21 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Queue;
 
 public class Activity_Profile extends AppCompatActivity {
 
-    private String userID;
     private String userEmail;
-    private String userLogin;
-    private String userCity;
-    private String userSex;
-    private String userBirthday;
-    private int userAvatar;
+    private Model_User user;
 
     private TextView avatar_text, login, city, sex, birthday;
     private RelativeLayout loginStroke, cityStroke, sexStroke, birthdayStroke;
@@ -60,7 +56,6 @@ public class Activity_Profile extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private DatabaseReference userDataBase;
     private String USER_KEY = "users";
-    private Model_User user;
 
     Map<String, ArrayList<String>> mapCitiesInRegion = new HashMap<>();
     String region; //Так и не нашел способа локализовать переменную в методе
@@ -113,6 +108,7 @@ public class Activity_Profile extends AppCompatActivity {
     private void onTouches() {
         //noinspection AndroidLintClickableViewAccessibility
         loginStroke.setOnTouchListener(new View.OnTouchListener() {
+            @SuppressLint("UseCompatLoadingForDrawables")
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
@@ -125,6 +121,7 @@ public class Activity_Profile extends AppCompatActivity {
         });
         //noinspection AndroidLintClickableViewAccessibility
         cityStroke.setOnTouchListener(new View.OnTouchListener() {
+            @SuppressLint("UseCompatLoadingForDrawables")
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
@@ -137,6 +134,7 @@ public class Activity_Profile extends AppCompatActivity {
         });
         //noinspection AndroidLintClickableViewAccessibility
         sexStroke.setOnTouchListener(new View.OnTouchListener() {
+            @SuppressLint("UseCompatLoadingForDrawables")
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
@@ -149,6 +147,7 @@ public class Activity_Profile extends AppCompatActivity {
         });
         //noinspection AndroidLintClickableViewAccessibility
         birthdayStroke.setOnTouchListener(new View.OnTouchListener() {
+            @SuppressLint("UseCompatLoadingForDrawables")
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
@@ -428,28 +427,27 @@ public class Activity_Profile extends AppCompatActivity {
 
     private void loadProfileDataFromFirebase() {
         userEmail = Objects.requireNonNull(mAuth.getCurrentUser()).getEmail();
-        //Toast.makeText(this, userEmail, Toast.LENGTH_SHORT).show();
 
         userDataBase.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot ds : snapshot.getChildren()) {
-                    String childEmail = String.valueOf(ds.child("email").getValue());
+                for (DataSnapshot zoneSnapshot : snapshot.getChildren()) {
+                    String childEmail = String.valueOf(zoneSnapshot.child("email").getValue());
 
                     if (userEmail.equals(childEmail)) {
-                        user = ds.getValue(Model_User.class);
+                        user = zoneSnapshot.getValue(Model_User.class);
 
                         assert user != null;
                         if (user.getLogin().equals("")) {
-                            login.setText(user.getID());
+                            login.setText(user.getEmail());
                         } else {
                             login.setText(user.getLogin());
                         }
                         city.setText(user.getCity());
                         sex.setText(user.getSex());
                         birthday.setText(user.getBirthday());
+                        break;
                     }
-                    break;
                 }
             }
 
@@ -466,6 +464,6 @@ public class Activity_Profile extends AppCompatActivity {
         user.setSex(sex.getText().toString());
         user.setBirthday(birthday.getText().toString());
 
-        userDataBase.child(USER_KEY).child(userID).setValue(user);
+        userDataBase.child(user.getID()).setValue(user);
     }
 }

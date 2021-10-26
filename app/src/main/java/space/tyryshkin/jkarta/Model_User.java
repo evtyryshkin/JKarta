@@ -1,5 +1,7 @@
 package space.tyryshkin.jkarta;
 
+import androidx.annotation.NonNull;
+
 public class Model_User {
 
     private String ID, email, login, city, sex, birthday;
@@ -20,6 +22,10 @@ public class Model_User {
 
     public String getID() {
         return ID;
+    }
+
+    public void setID(String ID) {
+        this.ID = ID;
     }
 
     public String getEmail() {
@@ -68,5 +74,11 @@ public class Model_User {
 
     public void setAvatar(int avatar) {
         this.avatar = avatar;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return ID;
     }
 }

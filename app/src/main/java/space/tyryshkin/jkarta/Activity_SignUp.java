@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
@@ -36,7 +37,6 @@ public class Activity_SignUp extends AppCompatActivity {
     private FirebaseAuth mAuth;
 
     private String USER_KEY = "users";
-    private String userID = "10000";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,18 +77,12 @@ public class Activity_SignUp extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             DatabaseReference userDataBase = FirebaseDatabase.getInstance().getReference(USER_KEY);
 
-                            userDataBase.addValueEventListener(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                    userID = String.valueOf(Integer.parseInt(userID) + snapshot.getChildrenCount());
-                                }
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError error) {
-                                }
-                            });
+                            String userID = userDataBase.push().getKey();
 
                             Model_User newUser = new Model_User(userID, email_edit.getText().toString(),
                                     "", "", "", "", 0);
+
+                            assert userID != null;
                             userDataBase.child(userID).setValue(newUser);
 
                             Intent intent = new Intent(getApplicationContext(), Activity_Profile.class);
@@ -105,19 +99,16 @@ public class Activity_SignUp extends AppCompatActivity {
     }
 
 
+    @SuppressLint("UseCompatLoadingForDrawables")
     private void onTouches() {
         //noinspection AndroidLintClickableViewAccessibility
-        btn_back.setOnTouchListener(new View.OnTouchListener() {
-            @SuppressLint("UseCompatLoadingForDrawables")
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-                    btn_back.setBackgroundDrawable(getResources().getDrawable(R.drawable.fon_primary_200));
-                } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-                    btn_back.setBackgroundColor(getColor(R.color.primary_500));
-                }
-                return false;
+        btn_back.setOnTouchListener((view, motionEvent) -> {
+            if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                btn_back.setBackgroundDrawable(getResources().getDrawable(R.drawable.fon_primary_200));
+            } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                btn_back.setBackgroundColor(getColor(R.color.primary_500));
             }
+            return false;
         });
     }
 

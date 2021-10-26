@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <color name="primary_200">#FFA873</color>
+    <color name="primary_200_alpha_30">#33FFA873</color>
+    <color name="primary_500">#FF6200</color>
+    <color name="primary_700">#A63F00</color>
+    <color name="secondary_50">#C8B48B</color>
+    <color name="secondary_200">#907741</color>
+    <color name="secondary_500">#201600</color>
+    <color name="secondary_700">#150E00</color>
+    <color name="teal_200">#60D4BA</color>
+    <color name="teal_500">#00AA86</color>
+    <color name="teal_700">#006F56</color>
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+    <color name="error">#ff0000</color>
+    <color name="ripple">#FF883C</color>
+    <color name="grey">#E0E0E0</color>
+    <color name="dark_grey">#9C9C9C</color>
+
+    <!-- Цвет обводки EditText, когда нет фокусировки на ней
+    <color name="mtrl_textinput_default_box_stroke_color" tools:override="true">#FFA873</color>-->
+</resources>

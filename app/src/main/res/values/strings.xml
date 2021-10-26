@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">JKarta</string>
+    <string name="email">Email</string>
+    <string name="password">Пароль</string>
+    <string name="sign_in">Войти</string>
+    <string name="sign_up">Зарегистрироваться</string>
+    <string name="restore_password">Восстановить пароль</string>
+    <string name="registration">Регистрация</string>
+    <string name="profile">Профиль</string>
+    <string name="ready">Готово</string>
+    <string name="login">Логин</string>
+    <string name="sex">Пол</string>
+    <string name="city">Город</string>
+    <string name="birthday">Дата рождения</string>
+    <string name="cancel">Назад</string>
+    <string name="save">Сохранить</string>
+    <string name="next">Далее</string>
+    <string name="change_login">Изменить логин</string>
+    <string name="enter_login">Введи логин</string>
+    <string name="change_region">Выбери регион</string>
+    <string name="change_city">Выбери город</string>
+    <string name="change_sex">Выбери пол</string>
+    <string name="man">Мужской</string>
+    <string name="woman">Женский</string>
+    <string name="change_birthday">Выбери дату рождения</string>
+</resources>

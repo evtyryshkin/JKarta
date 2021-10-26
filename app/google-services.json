@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "674666615346",
+    "firebase_url": "https://jkarta-af445-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "jkarta-af445",
+    "storage_bucket": "jkarta-af445.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:674666615346:android:1d100427530232981a622b",
+        "android_client_info": {
+          "package_name": "space.tyryshkin.jkarta"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "674666615346-opaan91d7rs8frve1f21m41ki5fq6bco.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "space.tyryshkin.jkarta",
+            "certificate_hash": "02ccc8cddc124fd951e2e75db6c32bbc708a5783"
+          }
+        },
+        {
+          "client_id": "674666615346-j0hbd0ap5npoqtqilm6vonc0jq7rk3ad.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAyiOdOCx0py53qJ4qNqnA0QjPbcYXsAaY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "674666615346-j0hbd0ap5npoqtqilm6vonc0jq7rk3ad.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

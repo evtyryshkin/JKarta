@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Activity_Profile">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/primary_500"
+        app:contentInsetStart="0dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="16dp"
+                android:layout_centerInParent="true"
+                android:text="@string/profile"
+                android:textColor="@color/white"
+                android:textSize="20sp" />
+        </RelativeLayout>
+    </com.google.android.material.appbar.MaterialToolbar>
+
+    <RelativeLayout
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/toolbar"
+        android:layout_marginTop="36dp"
+        android:background="@drawable/avatar_form">
+
+        <TextView
+            android:id="@+id/avatar_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="T"
+            android:textSize="54sp"
+            android:textColor="@color/secondary_500">
+        </TextView>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/btn_ready"
+        android:layout_below="@+id/toolbar"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="72dp"
+        android:paddingHorizontal="8dp"
+        android:paddingTop="100dp"
+        android:elevation="5dp">
+
+        <RelativeLayout
+            android:id="@+id/loginStroke"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="4dp"
+            android:paddingVertical="12dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="4dp"
+                android:text="@string/login"
+                android:textSize="14sp"
+                android:textColor="@color/secondary_500"/>
+
+            <TextView
+                android:id="@+id/login"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toStartOf="@+id/image_arrow_login"
+                android:layout_marginEnd="14dp"
+                android:text="tyryshkin-e@mail.ru"
+                android:textSize="14sp"
+                android:textColor="@color/primary_200" />
+            <ImageView
+                android:id="@+id/image_arrow_login"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="4dp"
+                android:src="@drawable/ic_arrow_forward"/>
+
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_below="@+id/loginStroke"
+            android:background="@color/primary_200"/>
+
+        <RelativeLayout
+            android:id="@+id/cityStroke"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/loginStroke"
+            android:paddingHorizontal="4dp"
+            android:paddingVertical="12dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="4dp"
+                android:text="@string/city"
+                android:textSize="14sp"
+                android:textColor="@color/secondary_500"/>
+
+            <TextView
+                android:id="@+id/city"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toStartOf="@+id/image_arrow_city"
+                android:layout_marginEnd="14dp"
+                android:text="Новый Уренгой"
+                android:textSize="14sp"
+                android:textColor="@color/primary_200" />
+            <ImageView
+                android:id="@+id/image_arrow_city"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="4dp"
+                android:src="@drawable/ic_arrow_forward"/>
+
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_below="@+id/cityStroke"
+            android:background="@color/primary_200"/>
+
+        <RelativeLayout
+            android:id="@+id/sexStroke"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/cityStroke"
+            android:paddingHorizontal="4dp"
+            android:paddingVertical="12dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="4dp"
+                android:text="@string/sex"
+                android:textSize="14sp"
+                android:textColor="@color/secondary_500"/>
+
+            <TextView
+                android:id="@+id/sex"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toStartOf="@+id/image_arrow_sex"
+                android:layout_marginEnd="14dp"
+                android:text="Мужской"
+                android:textSize="14sp"
+                android:textColor="@color/primary_200" />
+            <ImageView
+                android:id="@+id/image_arrow_sex"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="4dp"
+                android:src="@drawable/ic_arrow_forward"/>
+
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_below="@+id/sexStroke"
+            android:background="@color/primary_200"/>
+
+        <RelativeLayout
+            android:id="@+id/birthdayStroke"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/sexStroke"
+            android:paddingHorizontal="4dp"
+            android:paddingVertical="12dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="4dp"
+                android:text="@string/birthday"
+                android:textSize="14sp"
+                android:textColor="@color/secondary_500"/>
+
+            <TextView
+                android:id="@+id/birthday"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toStartOf="@+id/image_arrow_birthday"
+                android:layout_marginEnd="14dp"
+                android:text="16.12.1991"
+                android:textSize="14sp"
+                android:textColor="@color/primary_200" />
+            <ImageView
+                android:id="@+id/image_arrow_birthday"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="4dp"
+                android:src="@drawable/ic_arrow_forward"/>
+
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_below="@+id/birthdayStroke"
+            android:background="@color/primary_200"/>
+
+    </RelativeLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_ready"
+        android:layout_width="match_parent"
+        android:layout_height="54dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginHorizontal="64dp"
+        android:layout_marginTop="54dp"
+        android:layout_marginBottom="16dp"
+        android:stateListAnimator="@null"
+        android:text="@string/ready"
+        android:textAllCaps="false" />
+
+</RelativeLayout>

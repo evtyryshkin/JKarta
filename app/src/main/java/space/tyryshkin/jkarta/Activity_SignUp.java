@@ -1,0 +1,138 @@
+package space.tyryshkin.jkarta;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+
+public class Activity_SignUp extends AppCompatActivity {
+
+    private TextInputLayout email_layout, password_layout;
+    private EditText email_edit, password_edit;
+    private Button btn_sign_up;
+    private ImageView btn_back;
+
+    private FirebaseAuth mAuth;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_sign_up);
+
+        init();
+        onClicks();
+        onTouches();
+    }
+
+    public void init() {
+        btn_back = findViewById(R.id.btn_back);
+        email_layout = findViewById(R.id.email_layout);
+        password_layout = findViewById(R.id.password_layout);
+        email_edit = findViewById(R.id.email_edit);
+        password_edit = findViewById(R.id.password_edit);
+        btn_sign_up = findViewById(R.id.btn_sign_up);
+
+        mAuth = FirebaseAuth.getInstance();
+    }
+
+    private void onClicks() {
+        btn_back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getApplicationContext(), Activity_First.class);
+                startActivity(intent);
+            }
+        });
+
+        btn_sign_up.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                boolean validateEmail = checkValidateEmail();
+                boolean validatePassword = checkValidatePassword();
+
+                if (validateEmail && validatePassword) {
+                    mAuth.createUserWithEmailAndPassword(email_edit.getText().toString(), password_edit.getText().toString())
+                            .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            if (task.isSuccessful()) {
+                                Intent intent = new Intent(getApplicationContext(), Activity_Profile.class);
+                                startActivity(intent);
+                            } else {
+                                Toast.makeText(Activity_SignUp.this, "Данный e-mail уже зарегистрирован", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+
+    private void onTouches() {
+        //noinspection AndroidLintClickableViewAccessibility
+        btn_back.setOnTouchListener(new View.OnTouchListener() {
+            @SuppressLint("UseCompatLoadingForDrawables")
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                    btn_back.setBackgroundDrawable(getResources().getDrawable(R.drawable.fon_primary_200));
+                } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                    btn_back.setBackgroundColor(getColor(R.color.primary_500));
+                }
+                return false;
+            }
+        });
+    }
+
+    private boolean checkValidateEmail() {
+        String email = email_edit.getText().toString();
+        if (email.equals("")) {
+            email_layout.setError("Поле обязательно для заполнения");
+            btn_sign_up.setEnabled(false);
+            return false;
+        } else if (!email.contains("@")) {
+            email_layout.setError("Пример: mail@example.com");
+            btn_sign_up.setEnabled(false);
+            return false;
+        } else {
+            email_layout.setError(null);
+            btn_sign_up.setEnabled(true);
+            return true;
+        }
+    }
+    private boolean checkValidatePassword() {
+        String password = password_edit.getText().toString();
+        if (password.equals("")) {
+            password_layout.setError("Поле обязательно для заполнения");
+            btn_sign_up.setEnabled(false);
+            return false;
+        } else if (password.length() < 6) {
+            password_layout.setError("Минимум 6 символов");
+            btn_sign_up.setEnabled(false);
+            return false;
+        } else {
+            password_layout.setError(null);
+            btn_sign_up.setEnabled(true);
+            return true;
+        }
+    }
+
+    public void setChangeListener() {
+
+    }
+}

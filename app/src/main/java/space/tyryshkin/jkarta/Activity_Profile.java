@@ -1,6 +1,7 @@
 package space.tyryshkin.jkarta;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
@@ -8,12 +9,12 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.res.ColorStateList;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.MotionEvent;
-import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
@@ -23,8 +24,9 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -33,8 +35,12 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.StorageTask;
+import com.squareup.picasso.Picasso;
+import com.theartofdev.edmodo.cropper.CropImage;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -42,20 +48,25 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Queue;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class Activity_Profile extends AppCompatActivity {
 
-    private String userEmail;
     private Model_User user;
 
-    private TextView avatar_text, login, city, sex, birthday;
+    private TextView login, city, sex, birthday;
     private RelativeLayout loginStroke, cityStroke, sexStroke, birthdayStroke;
+    private CircleImageView profileImageView;
     private Button btn_ready;
 
     private FirebaseAuth mAuth;
     private DatabaseReference userDataBase;
     private String USER_KEY = "users";
+    private Uri imageUri;
+    private String myUri;
+    private StorageTask uploadTask;
+    private StorageReference storageProfileAvatar;
 
     Map<String, ArrayList<String>> mapCitiesInRegion = new HashMap<>();
     String region; //Так и не нашел способа локализовать переменную в методе
@@ -73,7 +84,7 @@ public class Activity_Profile extends AppCompatActivity {
     }
 
     public void init() {
-        avatar_text = findViewById(R.id.avatar_text);
+        profileImageView = findViewById(R.id.profile_image);
         login = findViewById(R.id.login);
         city = findViewById(R.id.city);
         sex = findViewById(R.id.sex);
@@ -86,10 +97,15 @@ public class Activity_Profile extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
         userDataBase = FirebaseDatabase.getInstance().getReference(USER_KEY);
+        storageProfileAvatar = FirebaseStorage.getInstance().getReference().child("Profile Avatars");
         loadProfileDataFromFirebase();
     }
 
     private void onClicks() {
+        profileImageView.setOnClickListener(view -> {
+            CropImage.activity().setAspectRatio(1, 1).start(this);
+        });
+
         loginStroke.setOnClickListener(view -> openDialogLogin());
 
         cityStroke.setOnClickListener(view -> openDialogsRegionAndCities(R.layout.dialog_change_region, null));
@@ -99,64 +115,68 @@ public class Activity_Profile extends AppCompatActivity {
         birthdayStroke.setOnClickListener(view -> openDialogBirthday());
 
         btn_ready.setOnClickListener(view -> {
+            uploadProfileImage();
             saveProfileDataToFirebase();
             Intent intent = new Intent(Activity_Profile.this, Activity_General_Space_App.class);
             startActivity(intent);
         });
     }
 
+    /*private void getUserInfo() {
+        userDataBase.child(mAuth.getCurrentUser().getUid()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists() && snapshot.getChildrenCount() > 0) {
+                    if (snapshot.hasChild("image")) {
+                        String image = snapshot.child("image").getValue().toString();
+                        Picasso.get().load(image).into(profileImageView);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }*/
+
     private void onTouches() {
         //noinspection AndroidLintClickableViewAccessibility
-        loginStroke.setOnTouchListener(new View.OnTouchListener() {
-            @SuppressLint("UseCompatLoadingForDrawables")
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-                    loginStroke.setBackgroundDrawable(getResources().getDrawable(R.drawable.fon_grey));
-                } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-                    loginStroke.setBackgroundColor(getColor(R.color.white));
-                }
-                return false;
+        loginStroke.setOnTouchListener((view, motionEvent) -> {
+            if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                loginStroke.setBackgroundDrawable(getResources().getDrawable(R.drawable.fon_grey));
+            } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                loginStroke.setBackgroundColor(getColor(R.color.white));
             }
+            return false;
         });
         //noinspection AndroidLintClickableViewAccessibility
-        cityStroke.setOnTouchListener(new View.OnTouchListener() {
-            @SuppressLint("UseCompatLoadingForDrawables")
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-                    cityStroke.setBackgroundDrawable(getResources().getDrawable(R.drawable.fon_grey));
-                } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-                    cityStroke.setBackgroundColor(getColor(R.color.white));
-                }
-                return false;
+        cityStroke.setOnTouchListener((view, motionEvent) -> {
+            if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                cityStroke.setBackgroundDrawable(getResources().getDrawable(R.drawable.fon_grey));
+            } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                cityStroke.setBackgroundColor(getColor(R.color.white));
             }
+            return false;
         });
         //noinspection AndroidLintClickableViewAccessibility
-        sexStroke.setOnTouchListener(new View.OnTouchListener() {
-            @SuppressLint("UseCompatLoadingForDrawables")
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-                    sexStroke.setBackgroundDrawable(getResources().getDrawable(R.drawable.fon_grey));
-                } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-                    sexStroke.setBackgroundColor(getColor(R.color.white));
-                }
-                return false;
+        sexStroke.setOnTouchListener((view, motionEvent) -> {
+            if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                sexStroke.setBackgroundDrawable(getResources().getDrawable(R.drawable.fon_grey));
+            } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                sexStroke.setBackgroundColor(getColor(R.color.white));
             }
+            return false;
         });
         //noinspection AndroidLintClickableViewAccessibility
-        birthdayStroke.setOnTouchListener(new View.OnTouchListener() {
-            @SuppressLint("UseCompatLoadingForDrawables")
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-                    birthdayStroke.setBackgroundDrawable(getResources().getDrawable(R.drawable.fon_grey));
-                } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-                    birthdayStroke.setBackgroundColor(getColor(R.color.white));
-                }
-                return false;
+        birthdayStroke.setOnTouchListener((view, motionEvent) -> {
+            if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                birthdayStroke.setBackgroundDrawable(getResources().getDrawable(R.drawable.fon_grey));
+            } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                birthdayStroke.setBackgroundColor(getColor(R.color.white));
             }
+            return false;
         });
     }
 
@@ -179,7 +199,7 @@ public class Activity_Profile extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                if (edit.getText().toString().equals("")) {
+                if (Objects.requireNonNull(edit.getText()).toString().equals("")) {
                     login_layout.setError("Поле обязательно для заполнения");
                     save.setEnabled(false);
                 } else if (edit.getText().toString().length() < 5) {
@@ -240,7 +260,7 @@ public class Activity_Profile extends AppCompatActivity {
             ProgressDialog progressDialog = createProgressDialog();
             searchDataFromFirebase(progressDialog, dialog, radio_group_list);
         } else {
-            createRadioButtonsProgrammatically(radio_group_list, mapCitiesInRegion.get(region));
+            createRadioButtonsProgrammatically(radio_group_list, Objects.requireNonNull(mapCitiesInRegion.get(region)));
             dialog.show();
         }
     }
@@ -272,12 +292,9 @@ public class Activity_Profile extends AppCompatActivity {
         createColorOfRadioButton(radio_btn_man);
         createColorOfRadioButton(radio_btn_woman);
 
-        radio_group_list_of_sex.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup radioGroup, int position) {
-                radioButtonSex = (RadioButton) radioGroup.findViewById(position);
-                save.setEnabled(true);
-            }
+        radio_group_list_of_sex.setOnCheckedChangeListener((RadioGroup.OnCheckedChangeListener) (radioGroup, position) -> {
+            radioButtonSex = (RadioButton) radioGroup.findViewById(position);
+            save.setEnabled(true);
         });
 
         cancel.setOnClickListener(view -> dialog.dismiss());
@@ -289,6 +306,7 @@ public class Activity_Profile extends AppCompatActivity {
         dialog.show();
     }
 
+    @SuppressLint("SetTextI18n")
     private void openDialogBirthday() {
         Dialog dialog = createDialog(R.layout.dialog_change_birthday);
         placeDialogBottom(dialog);
@@ -307,29 +325,20 @@ public class Activity_Profile extends AppCompatActivity {
         calendar.set(calendar.get(Calendar.YEAR) - 18, calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
         datePicker.setMaxDate(calendar.getTimeInMillis());
 
-        cancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog.dismiss();
-            }
-        });
+        cancel.setOnClickListener(view -> dialog.dismiss());
 
-        save.setOnClickListener(new View.OnClickListener() {
-            @SuppressLint("SetTextI18n")
-            @Override
-            public void onClick(View view) {
-                String year = String.valueOf(datePicker.getYear());
-                String month = String.valueOf(datePicker.getMonth() + 1);
-                if (month.length() < 2) {
-                    month = "0" + month;
-                }
-                String day = String.valueOf(datePicker.getDayOfMonth());
-                if (day.length() < 2) {
-                    day = "0" + day;
-                }
-                birthday.setText(day + "." + month + "." + year);
-                dialog.dismiss();
+        save.setOnClickListener(view -> {
+            String year = String.valueOf(datePicker.getYear());
+            String month = String.valueOf(datePicker.getMonth() + 1);
+            if (month.length() < 2) {
+                month = "0" + month;
             }
+            String day = String.valueOf(datePicker.getDayOfMonth());
+            if (day.length() < 2) {
+                day = "0" + day;
+            }
+            birthday.setText(day + "." + month + "." + year);
+            dialog.dismiss();
         });
         dialog.show();
     }
@@ -343,6 +352,7 @@ public class Activity_Profile extends AppCompatActivity {
         return progressDialog;
     }
 
+    @SuppressLint("UseCompatLoadingForDrawables")
     private Dialog createDialog(int layout) {
         Dialog dialog = new Dialog(Activity_Profile.this);
         dialog.setContentView(layout);
@@ -426,29 +436,29 @@ public class Activity_Profile extends AppCompatActivity {
 
 
     private void loadProfileDataFromFirebase() {
-        userEmail = Objects.requireNonNull(mAuth.getCurrentUser()).getEmail();
+        ProgressDialog progressDialog = createProgressDialog();
 
-        userDataBase.addValueEventListener(new ValueEventListener() {
+        userDataBase.child(mAuth.getCurrentUser().getUid()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot zoneSnapshot : snapshot.getChildren()) {
-                    String childEmail = String.valueOf(zoneSnapshot.child("email").getValue());
 
-                    if (userEmail.equals(childEmail)) {
-                        user = zoneSnapshot.getValue(Model_User.class);
+                user = snapshot.getValue(Model_User.class);
 
-                        assert user != null;
-                        if (user.getLogin().equals("")) {
-                            login.setText(user.getEmail());
-                        } else {
-                            login.setText(user.getLogin());
-                        }
-                        city.setText(user.getCity());
-                        sex.setText(user.getSex());
-                        birthday.setText(user.getBirthday());
-                        break;
-                    }
+                assert user != null;
+                if (user.getImage() != null && !user.getImage().equals("")) {
+                    Picasso.get().load(user.getImage()).into(profileImageView);
                 }
+                assert user != null;
+                if (user.getLogin().equals("")) {
+                    login.setText(user.getEmail());
+                } else {
+                    login.setText(user.getLogin());
+                }
+                city.setText(user.getCity());
+                sex.setText(user.getSex());
+                birthday.setText(user.getBirthday());
+
+                progressDialog.dismiss();
             }
 
             @Override
@@ -459,11 +469,56 @@ public class Activity_Profile extends AppCompatActivity {
     }
 
     private void saveProfileDataToFirebase() {
+        ProgressDialog progressDialog = createProgressDialog();
+
         user.setLogin(login.getText().toString());
         user.setCity(city.getText().toString());
         user.setSex(sex.getText().toString());
         user.setBirthday(birthday.getText().toString());
 
-        userDataBase.child(user.getID()).setValue(user);
+        userDataBase.child(Objects.requireNonNull(mAuth.getCurrentUser()).getUid()).setValue(user);
+
+        progressDialog.dismiss();
+    }
+
+    //Устанавливает аватар, после обрезки на своё место
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+            imageUri = result.getUri();
+
+            profileImageView.setImageURI(imageUri);
+        }
+    }
+
+
+    private void uploadProfileImage() {
+        if (imageUri != null) {
+            StorageReference storageUser = storageProfileAvatar
+                    .child(Objects.requireNonNull(mAuth.getCurrentUser()).getUid() + ".jpg");
+            uploadTask = storageUser.putFile(imageUri);
+
+            uploadTask.continueWithTask((Continuation) task -> {
+                if (!task.isSuccessful()) {
+                    throw task.getException();
+                }
+                return storageUser.getDownloadUrl();
+            }).addOnCompleteListener((OnCompleteListener<Uri>) task -> {
+                if (task.isSuccessful()) {
+                    Uri downloadUrl = task.getResult();
+                    assert downloadUrl != null;
+                    myUri = downloadUrl.toString();
+
+                    HashMap<String, Object> userMap = new HashMap<>();
+                    userMap.put("image", myUri);
+
+                    userDataBase.child(mAuth.getCurrentUser().getUid()).updateChildren(userMap);
+                }
+            });
+        }
+
     }
 }

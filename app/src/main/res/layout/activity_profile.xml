@@ -29,7 +29,16 @@
         </RelativeLayout>
     </com.google.android.material.appbar.MaterialToolbar>
 
-    <RelativeLayout
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/profile_image"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/toolbar"
+        android:layout_marginTop="36dp"
+        android:src="@drawable/avatar_form" />
+
+    <!--<RelativeLayout
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:layout_centerHorizontal="true"
@@ -47,7 +56,7 @@
             android:textColor="@color/secondary_500">
         </TextView>
 
-    </RelativeLayout>
+    </RelativeLayout>-->
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -86,7 +95,6 @@
                 android:layout_centerVertical="true"
                 android:layout_toStartOf="@+id/image_arrow_login"
                 android:layout_marginEnd="14dp"
-                android:text="tyryshkin-e@mail.ru"
                 android:textSize="14sp"
                 android:textColor="@color/primary_200" />
             <ImageView
@@ -133,7 +141,6 @@
                 android:layout_centerVertical="true"
                 android:layout_toStartOf="@+id/image_arrow_city"
                 android:layout_marginEnd="14dp"
-                android:text="Новый Уренгой"
                 android:textSize="14sp"
                 android:textColor="@color/primary_200" />
             <ImageView
@@ -180,7 +187,6 @@
                 android:layout_centerVertical="true"
                 android:layout_toStartOf="@+id/image_arrow_sex"
                 android:layout_marginEnd="14dp"
-                android:text="Мужской"
                 android:textSize="14sp"
                 android:textColor="@color/primary_200" />
             <ImageView
@@ -227,7 +233,6 @@
                 android:layout_centerVertical="true"
                 android:layout_toStartOf="@+id/image_arrow_birthday"
                 android:layout_marginEnd="14dp"
-                android:text="16.12.1991"
                 android:textSize="14sp"
                 android:textColor="@color/primary_200" />
             <ImageView

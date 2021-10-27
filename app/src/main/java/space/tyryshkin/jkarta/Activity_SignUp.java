@@ -4,11 +4,13 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -38,6 +40,8 @@ public class Activity_SignUp extends AppCompatActivity {
 
     private String USER_KEY = "users";
 
+    public static Activity_SignUp instance;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,6 +53,7 @@ public class Activity_SignUp extends AppCompatActivity {
     }
 
     public void init() {
+        instance = this;
         btn_back = findViewById(R.id.btn_back);
         email_layout = findViewById(R.id.email_layout);
         password_layout = findViewById(R.id.password_layout);
@@ -66,6 +71,9 @@ public class Activity_SignUp extends AppCompatActivity {
         });
 
         btn_sign_up.setOnClickListener(view -> {
+            //Прячем клавиатуру
+            hideKeyBoard();
+
             boolean validateEmail = checkValidateEmail();
             boolean validatePassword = checkValidatePassword();
 
@@ -77,13 +85,12 @@ public class Activity_SignUp extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             DatabaseReference userDataBase = FirebaseDatabase.getInstance().getReference(USER_KEY);
 
-                            String userID = userDataBase.push().getKey();
+                            String userID = mAuth.getCurrentUser().getUid();
 
-                            Model_User newUser = new Model_User(userID, email_edit.getText().toString(),
-                                    "", "", "", "", 0);
+                            Model_User newUser = new Model_User(userID, "", email_edit.getText().toString(),
+                                    "", "", "", "");
 
-                            assert userID != null;
-                            userDataBase.child(userID).setValue(newUser);
+                            userDataBase.child(mAuth.getCurrentUser().getUid()).setValue(newUser);
 
                             Intent intent = new Intent(getApplicationContext(), Activity_Profile.class);
                             startActivity(intent);
@@ -142,6 +149,15 @@ public class Activity_SignUp extends AppCompatActivity {
             password_layout.setError(null);
             btn_sign_up.setEnabled(true);
             return true;
+        }
+    }
+
+    public static void hideKeyBoard() {
+        View keyBoard = instance.getCurrentFocus();
+        if (keyBoard != null) {
+            InputMethodManager inputMethodManager = (InputMethodManager) instance.getSystemService(INPUT_METHOD_SERVICE);
+            assert inputMethodManager != null;
+            inputMethodManager.hideSoftInputFromWindow(keyBoard.getWindowToken(), 0);
         }
     }
 }

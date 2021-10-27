@@ -9,12 +9,12 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="center"
-        android:padding="46dp"
         android:background="@drawable/fon_white">
 
         <ProgressBar
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_margin="46dp"
             android:indeterminateTint="@color/primary_200"/>
 
     </LinearLayout>

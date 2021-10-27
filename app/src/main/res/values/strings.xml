@@ -23,4 +23,10 @@
     <string name="man">Мужской</string>
     <string name="woman">Женский</string>
     <string name="change_birthday">Выбери дату рождения</string>
+    <string name="crop_image_menu_rotate_left">Повернуть налево</string>
+    <string name="crop_image_menu_rotate_right">Повернуть направо</string>
+    <string name="crop_image_menu_flip_horizontally">Отразить по горизонтали</string>
+    <string name="crop_image_menu_flip_vertically">Отразить по вертикали</string>
+    <string name="pick_image_intent_chooser_tittle">ыбрать источник</string>
+    <string name="crop_image_menu_crop">Обрезать</string>
 </resources>

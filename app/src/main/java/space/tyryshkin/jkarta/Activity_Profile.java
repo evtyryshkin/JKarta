@@ -15,15 +15,18 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -55,19 +58,20 @@ public class Activity_Profile extends AppCompatActivity {
 
     private Model_User user;
 
-    private TextView login, city, sex, birthday;
+    private TextView avatar_text, login, city, sex, birthday;
     private RelativeLayout loginStroke, cityStroke, sexStroke, birthdayStroke;
-    private CircleImageView profileImageView;
+    private CircleImageView profileSimpleImageView, profileImageView;
     private Button btn_ready;
+    private ImageButton btn_remove_image;
 
     private FirebaseAuth mAuth;
     private DatabaseReference userDataBase;
     private String USER_KEY = "users";
     private Uri imageUri;
     private String myUri;
-    private StorageTask uploadTask;
     private StorageReference storageProfileAvatar;
 
+    ArrayList<String> listOfLogin = new ArrayList<>();
     Map<String, ArrayList<String>> mapCitiesInRegion = new HashMap<>();
     String region; //Так и не нашел способа локализовать переменную в методе
 
@@ -83,8 +87,11 @@ public class Activity_Profile extends AppCompatActivity {
         onTouches();
     }
 
+    @SuppressLint("CutPasteId")
     public void init() {
+        profileSimpleImageView = findViewById(R.id.profile_simple_image);
         profileImageView = findViewById(R.id.profile_image);
+        avatar_text = findViewById(R.id.avatar_text);
         login = findViewById(R.id.login);
         city = findViewById(R.id.city);
         sex = findViewById(R.id.sex);
@@ -93,15 +100,21 @@ public class Activity_Profile extends AppCompatActivity {
         cityStroke = findViewById(R.id.cityStroke);
         sexStroke = findViewById(R.id.sexStroke);
         birthdayStroke = findViewById(R.id.birthdayStroke);
+
+        btn_remove_image = findViewById(R.id.btn_remove_image);
         btn_ready = findViewById(R.id.btn_ready);
 
         mAuth = FirebaseAuth.getInstance();
         userDataBase = FirebaseDatabase.getInstance().getReference(USER_KEY);
         storageProfileAvatar = FirebaseStorage.getInstance().getReference().child("Profile Avatars");
         loadProfileDataFromFirebase();
+        listOfLogin = findAllLogin();
     }
 
     private void onClicks() {
+        profileSimpleImageView.setOnClickListener(view -> {
+            CropImage.activity().setAspectRatio(1, 1).start(this);
+        });
         profileImageView.setOnClickListener(view -> {
             CropImage.activity().setAspectRatio(1, 1).start(this);
         });
@@ -114,6 +127,8 @@ public class Activity_Profile extends AppCompatActivity {
 
         birthdayStroke.setOnClickListener(view -> openDialogBirthday());
 
+        btn_remove_image.setOnClickListener(view -> removeImage());
+
         btn_ready.setOnClickListener(view -> {
             uploadProfileImage();
             saveProfileDataToFirebase();
@@ -122,26 +137,18 @@ public class Activity_Profile extends AppCompatActivity {
         });
     }
 
-    /*private void getUserInfo() {
-        userDataBase.child(mAuth.getCurrentUser().getUid()).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.exists() && snapshot.getChildrenCount() > 0) {
-                    if (snapshot.hasChild("image")) {
-                        String image = snapshot.child("image").getValue().toString();
-                        Picasso.get().load(image).into(profileImageView);
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-    }*/
-
+    @SuppressLint("UseCompatLoadingForDrawables")
     private void onTouches() {
+        //noinspection AndroidLintClickableViewAccessibility
+        btn_remove_image.setOnTouchListener((view, motionEvent) -> {
+            if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                btn_remove_image.setBackgroundDrawable(getResources().getDrawable(R.drawable.fon_grey));
+            } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                btn_remove_image.setBackgroundColor(getColor(R.color.white));
+            }
+            return false;
+        });
+
         //noinspection AndroidLintClickableViewAccessibility
         loginStroke.setOnTouchListener((view, motionEvent) -> {
             if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
@@ -205,6 +212,12 @@ public class Activity_Profile extends AppCompatActivity {
                 } else if (edit.getText().toString().length() < 5) {
                     login_layout.setError("Минимум 5 символов");
                     save.setEnabled(false);
+                } else if (edit.getText().toString().contains(" ")) {
+                    login_layout.setError("Пробелы не разрешены");
+                    save.setEnabled(false);
+                } else if (listOfLogin.contains(edit.getText().toString())) {
+                    login_layout.setError("Логин уже существует");
+                    save.setEnabled(false);
                 } else {
                     login_layout.setError(null);
                     save.setEnabled(true);
@@ -218,6 +231,7 @@ public class Activity_Profile extends AppCompatActivity {
 
         save.setOnClickListener(view -> {
             dialog.dismiss();
+            avatar_text.setText(Objects.requireNonNull(edit.getText()).toString().substring(0, 1).toUpperCase());
             login.setText(Objects.requireNonNull(edit.getText()).toString());
         });
 
@@ -258,7 +272,7 @@ public class Activity_Profile extends AppCompatActivity {
 
         if (previousDialog == null) {
             ProgressDialog progressDialog = createProgressDialog();
-            searchDataFromFirebase(progressDialog, dialog, radio_group_list);
+            searchCitiesFromFirebase(progressDialog, dialog, radio_group_list);
         } else {
             createRadioButtonsProgrammatically(radio_group_list, Objects.requireNonNull(mapCitiesInRegion.get(region)));
             dialog.show();
@@ -401,7 +415,7 @@ public class Activity_Profile extends AppCompatActivity {
         radioButton.invalidate();
     }
 
-    private void searchDataFromFirebase(ProgressDialog progressDialog, Dialog dialog, RadioGroup radioGroup) {
+    private void searchCitiesFromFirebase(ProgressDialog progressDialog, Dialog dialog, RadioGroup radioGroup) {
         String CITY_KEY = "cities";
         DatabaseReference citiesDataBase = FirebaseDatabase.getInstance().getReference(CITY_KEY);
         citiesDataBase.addValueEventListener(new ValueEventListener() {
@@ -441,11 +455,14 @@ public class Activity_Profile extends AppCompatActivity {
         userDataBase.child(mAuth.getCurrentUser().getUid()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-
                 user = snapshot.getValue(Model_User.class);
 
                 assert user != null;
                 if (user.getImage() != null && !user.getImage().equals("")) {
+                    profileSimpleImageView.setVisibility(View.INVISIBLE);
+                    avatar_text.setVisibility(View.INVISIBLE);
+                    btn_remove_image.setVisibility(View.VISIBLE);
+                    profileImageView.setVisibility(View.VISIBLE);
                     Picasso.get().load(user.getImage()).into(profileImageView);
                 }
                 assert user != null;
@@ -454,6 +471,7 @@ public class Activity_Profile extends AppCompatActivity {
                 } else {
                     login.setText(user.getLogin());
                 }
+                avatar_text.setText(Objects.requireNonNull(login.getText()).toString().substring(0, 1).toUpperCase());
                 city.setText(user.getCity());
                 sex.setText(user.getSex());
                 birthday.setText(user.getBirthday());
@@ -466,6 +484,14 @@ public class Activity_Profile extends AppCompatActivity {
 
             }
         });
+    }
+
+    private void removeImage() {
+        profileSimpleImageView.setVisibility(View.VISIBLE);
+        avatar_text.setVisibility(View.VISIBLE);
+        avatar_text.setText(Objects.requireNonNull(login.getText()).toString().substring(0, 1).toUpperCase());
+        btn_remove_image.setVisibility(View.INVISIBLE);
+        profileImageView.setVisibility(View.INVISIBLE);
     }
 
     private void saveProfileDataToFirebase() {
@@ -490,16 +516,19 @@ public class Activity_Profile extends AppCompatActivity {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             imageUri = result.getUri();
 
+            profileSimpleImageView.setVisibility(View.INVISIBLE);
+            avatar_text.setVisibility(View.INVISIBLE);
+            btn_remove_image.setVisibility(View.VISIBLE);
+            profileImageView.setVisibility(View.VISIBLE);
             profileImageView.setImageURI(imageUri);
         }
     }
-
 
     private void uploadProfileImage() {
         if (imageUri != null) {
             StorageReference storageUser = storageProfileAvatar
                     .child(Objects.requireNonNull(mAuth.getCurrentUser()).getUid() + ".jpg");
-            uploadTask = storageUser.putFile(imageUri);
+            StorageTask uploadTask = storageUser.putFile(imageUri);
 
             uploadTask.continueWithTask((Continuation) task -> {
                 if (!task.isSuccessful()) {
@@ -519,6 +548,22 @@ public class Activity_Profile extends AppCompatActivity {
                 }
             });
         }
+    }
 
+    private ArrayList<String> findAllLogin() {
+        userDataBase.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    String login = String.valueOf(ds.child("login").getValue());
+                    listOfLogin.add(login);
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+        return listOfLogin;
     }
 }

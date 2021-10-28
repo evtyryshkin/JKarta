@@ -70,8 +70,10 @@ public class Activity_Profile extends AppCompatActivity {
     private Uri imageUri;
     private String myUri;
     private StorageReference storageProfileAvatar;
+    private String CITY_KEY = "cities";
+    private DatabaseReference citiesDataBase;
 
-    ArrayList<String> listOfLogin = new ArrayList<>();
+    private ArrayList<String> listOfLogin = new ArrayList<>();
     Map<String, ArrayList<String>> mapCitiesInRegion = new HashMap<>();
     String region; //Так и не нашел способа локализовать переменную в методе
 
@@ -106,7 +108,11 @@ public class Activity_Profile extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
         userDataBase = FirebaseDatabase.getInstance().getReference(USER_KEY);
-        storageProfileAvatar = FirebaseStorage.getInstance().getReference().child("Profile Avatars");
+        storageProfileAvatar = FirebaseStorage.getInstance().getReference().child("Avatars");
+
+        citiesDataBase = FirebaseDatabase.getInstance().getReference(CITY_KEY);
+        searchCitiesFromFirebase(null, null, null);
+
         loadProfileDataFromFirebase();
         listOfLogin = findAllLogin();
     }
@@ -215,7 +221,7 @@ public class Activity_Profile extends AppCompatActivity {
                 } else if (edit.getText().toString().contains(" ")) {
                     login_layout.setError("Пробелы не разрешены");
                     save.setEnabled(false);
-                } else if (listOfLogin.contains(edit.getText().toString())) {
+                } else if (containsIgnoreCase(listOfLogin, edit.getText().toString())) {
                     login_layout.setError("Логин уже существует");
                     save.setEnabled(false);
                 } else {
@@ -337,7 +343,9 @@ public class Activity_Profile extends AppCompatActivity {
             datePicker.updateDate(year, month - 1, day);
         }
         calendar.set(calendar.get(Calendar.YEAR) - 18, calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
-        datePicker.setMaxDate(calendar.getTimeInMillis());
+        if (!login.getText().toString().equals("JKarta")) {
+            datePicker.setMaxDate(calendar.getTimeInMillis());
+        }
 
         cancel.setOnClickListener(view -> dialog.dismiss());
 
@@ -416,8 +424,6 @@ public class Activity_Profile extends AppCompatActivity {
     }
 
     private void searchCitiesFromFirebase(ProgressDialog progressDialog, Dialog dialog, RadioGroup radioGroup) {
-        String CITY_KEY = "cities";
-        DatabaseReference citiesDataBase = FirebaseDatabase.getInstance().getReference(CITY_KEY);
         citiesDataBase.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -432,14 +438,21 @@ public class Activity_Profile extends AppCompatActivity {
                     mapCitiesInRegion.get(region).add(city);
                 }
 
-                progressDialog.dismiss();
+                if (progressDialog != null) {
+                    progressDialog.dismiss();
+                }
 
                 ArrayList<String> allRegionsArrayList = new ArrayList<>(mapCitiesInRegion.keySet());
                 Collections.sort(allRegionsArrayList, String::compareToIgnoreCase);
 
-                createRadioButtonsProgrammatically(radioGroup, allRegionsArrayList);
+                if (radioGroup != null) {
+                    createRadioButtonsProgrammatically(radioGroup, allRegionsArrayList);
+                }
 
-                dialog.show();
+                if (dialog != null) {
+                    dialog.show();
+                }
+
             }
 
             @Override
@@ -447,7 +460,6 @@ public class Activity_Profile extends AppCompatActivity {
             }
         });
     }
-
 
     private void loadProfileDataFromFirebase() {
         ProgressDialog progressDialog = createProgressDialog();
@@ -565,5 +577,14 @@ public class Activity_Profile extends AppCompatActivity {
             }
         });
         return listOfLogin;
+    }
+
+    private boolean containsIgnoreCase(ArrayList<String> list, String string) {
+        for (String i : list) {
+            if (i.equalsIgnoreCase(string)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

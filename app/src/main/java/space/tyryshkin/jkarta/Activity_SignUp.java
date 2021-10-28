@@ -34,6 +34,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.EventListener;
+import java.util.Objects;
 
 public class Activity_SignUp extends AppCompatActivity {
 
@@ -96,10 +97,17 @@ public class Activity_SignUp extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
+                            Objects.requireNonNull(mAuth.getCurrentUser()).sendEmailVerification().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    
+                                }
+                            });
+
                             String userID = mAuth.getCurrentUser().getUid();
 
                             Model_User newUser = new Model_User(userID, "", email_edit.getText().toString(),
-                                    "", "", "", "");
+                                    "", "", "", "", "4141");
 
                             userDataBase.child(mAuth.getCurrentUser().getUid()).setValue(newUser);
 

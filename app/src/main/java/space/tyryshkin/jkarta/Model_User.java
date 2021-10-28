@@ -4,12 +4,12 @@ import androidx.annotation.NonNull;
 
 public class Model_User {
 
-    private String ID, image, email, login, city, sex, birthday;
+    private String ID, image, email, login, city, sex, birthday, pin_code;
 
     public Model_User() {
     }
 
-    public Model_User(String ID, String image, String email, String login, String city, String sex, String birthday) {
+    public Model_User(String ID, String image, String email, String login, String city, String sex, String birthday, String pin_code) {
         this.ID = ID;
         this.image = image;
         this.email = email;
@@ -17,6 +17,7 @@ public class Model_User {
         this.city = city;
         this.sex = sex;
         this.birthday = birthday;
+        this.pin_code = pin_code;
     }
 
     public String getImage() {
@@ -73,6 +74,14 @@ public class Model_User {
 
     public void setBirthday(String birthday) {
         this.birthday = birthday;
+    }
+
+    public String getPin_code() {
+        return pin_code;
+    }
+
+    public void setPin_code(String pin_code) {
+        this.pin_code = pin_code;
     }
 
     @NonNull

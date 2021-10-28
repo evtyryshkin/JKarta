@@ -18,6 +18,13 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.Objects;
 
 public class Activity_First extends AppCompatActivity {
 
@@ -26,19 +33,35 @@ public class Activity_First extends AppCompatActivity {
     private Button btn_sign_in, btn_sign_up, btn_restore_password;
 
     private FirebaseAuth mAuth;
+    private DatabaseReference userDataBase;
+    private String USER_KEY = "users";
 
     @Override
     protected void onStart() {
         super.onStart();
-        FirebaseUser currentUser = mAuth.getCurrentUser();
+        /*FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
 
             //Тут надо написать код по переходу в другое активити, в случае, если приложение обнаруживает, что пользователь идентифицирован
             //Также необходимо добавить вход по отпечатку пальца или по пину.
-            Toast.makeText(this, "User not null", Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(this, "User null", Toast.LENGTH_SHORT).show();
-        }
+            Toast.makeText(this, mAuth.getCurrentUser().getUid(), Toast.LENGTH_SHORT).show();
+            userDataBase.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                        if (dataSnapshot.getValue().equals(mAuth.getCurrentUser().getUid())) {
+                            Intent intent = new Intent(Activity_First.this, Activity_Pin_Code.class);
+                            startActivity(intent);
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+        }*/
     }
 
     @Override
@@ -48,6 +71,28 @@ public class Activity_First extends AppCompatActivity {
 
         init();
         onClicks();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            //Тут надо написать код по переходу в другое активити, в случае, если приложение обнаруживает, что пользователь идентифицирован
+            //Также необходимо добавить вход по отпечатку пальца или по пину.
+
+            userDataBase.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                        if (Objects.requireNonNull(dataSnapshot.child("id").getValue()).equals(mAuth.getCurrentUser().getUid())) {
+                            Intent intent = new Intent(Activity_First.this, Activity_Pin_Code.class);
+                            startActivity(intent);
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+        }
     }
 
     public void init() {
@@ -60,6 +105,7 @@ public class Activity_First extends AppCompatActivity {
         btn_restore_password = findViewById(R.id.btn_restore_password);
 
         mAuth = FirebaseAuth.getInstance();
+        userDataBase = FirebaseDatabase.getInstance().getReference(USER_KEY);
     }
 
     private void onClicks() {

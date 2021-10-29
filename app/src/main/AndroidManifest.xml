@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
@@ -13,8 +14,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.JKarta">
-        <activity android:name=".Activity_Pin_Code"
+        <activity android:name=".Activity_Pin_Code_Create"
             android:screenOrientation="portrait"/>
+        <activity
+            android:name=".Activity_SignIn"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".Activity_Pin_Code_Enter"
+            android:screenOrientation="portrait" />
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:theme="@style/Theme.JKarta_For_Cropp_Photo" />
@@ -23,14 +31,13 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".Activity_Profile"
-            android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustResize" /> <!-- Данный атрибут позволяет перемещать Views когда вылазит keyboard -->
+            android:screenOrientation="portrait" />
         <activity
             android:name=".Activity_SignUp"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize" /> <!-- Данный атрибут позволяет перемещать Views когда вылазит keyboard -->
         <activity
-            android:name=".Activity_First"
+            android:name=".Activity_Start_Banner"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize"> <!-- Данный атрибут позволяет перемещать Views когда вылазит keyboard -->
             <intent-filter>

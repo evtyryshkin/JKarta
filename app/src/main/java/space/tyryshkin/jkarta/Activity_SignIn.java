@@ -3,30 +3,21 @@ package space.tyryshkin.jkarta;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
-import java.util.Objects;
-
-public class Activity_First extends AppCompatActivity {
+public class Activity_SignIn extends AppCompatActivity {
 
     private TextInputLayout email_layout, password_layout;
     private EditText email_edit, password_edit;
@@ -37,62 +28,12 @@ public class Activity_First extends AppCompatActivity {
     private String USER_KEY = "users";
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        /*FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser != null) {
-
-            //Тут надо написать код по переходу в другое активити, в случае, если приложение обнаруживает, что пользователь идентифицирован
-            //Также необходимо добавить вход по отпечатку пальца или по пину.
-            Toast.makeText(this, mAuth.getCurrentUser().getUid(), Toast.LENGTH_SHORT).show();
-            userDataBase.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
-                        if (dataSnapshot.getValue().equals(mAuth.getCurrentUser().getUid())) {
-                            Intent intent = new Intent(Activity_First.this, Activity_Pin_Code.class);
-                            startActivity(intent);
-                        }
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-
-                }
-            });
-        }*/
-    }
-
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_first);
+        setContentView(R.layout.activity_sign_in);
 
         init();
         onClicks();
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser != null) {
-            //Тут надо написать код по переходу в другое активити, в случае, если приложение обнаруживает, что пользователь идентифицирован
-            //Также необходимо добавить вход по отпечатку пальца или по пину.
-
-            userDataBase.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
-                        if (Objects.requireNonNull(dataSnapshot.child("id").getValue()).equals(mAuth.getCurrentUser().getUid())) {
-                            Intent intent = new Intent(Activity_First.this, Activity_Pin_Code.class);
-                            startActivity(intent);
-                        }
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-
-                }
-            });
-        }
     }
 
     public void init() {

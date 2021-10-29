@@ -1,8 +1,13 @@
 package space.tyryshkin.jkarta;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import androidx.annotation.NonNull;
 
-public class Model_User {
+import java.io.Serializable;
+
+public class Model_User implements Parcelable {
 
     private String ID, image, email, login, city, sex, birthday, pin_code;
 
@@ -19,6 +24,29 @@ public class Model_User {
         this.birthday = birthday;
         this.pin_code = pin_code;
     }
+
+    protected Model_User(Parcel in) {
+        ID = in.readString();
+        image = in.readString();
+        email = in.readString();
+        login = in.readString();
+        city = in.readString();
+        sex = in.readString();
+        birthday = in.readString();
+        pin_code = in.readString();
+    }
+
+    public static final Creator<Model_User> CREATOR = new Creator<Model_User>() {
+        @Override
+        public Model_User createFromParcel(Parcel in) {
+            return new Model_User(in);
+        }
+
+        @Override
+        public Model_User[] newArray(int size) {
+            return new Model_User[size];
+        }
+    };
 
     public String getImage() {
         return image;
@@ -88,5 +116,22 @@ public class Model_User {
     @Override
     public String toString() {
         return ID;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(ID);
+        parcel.writeString(image);
+        parcel.writeString(email);
+        parcel.writeString(login);
+        parcel.writeString(city);
+        parcel.writeString(sex);
+        parcel.writeString(birthday);
+        parcel.writeString(pin_code);
     }
 }

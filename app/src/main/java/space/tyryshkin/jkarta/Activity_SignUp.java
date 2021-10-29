@@ -4,9 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -18,7 +16,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -31,9 +28,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.time.temporal.ChronoField;
 import java.util.ArrayList;
-import java.util.EventListener;
 import java.util.Objects;
 
 public class Activity_SignUp extends AppCompatActivity {
@@ -78,7 +73,7 @@ public class Activity_SignUp extends AppCompatActivity {
 
     private void onClicks() {
         btn_back.setOnClickListener(view -> {
-            Intent intent = new Intent(getApplicationContext(), Activity_First.class);
+            Intent intent = new Intent(getApplicationContext(), Activity_SignIn.class);
             startActivity(intent);
         });
 
@@ -107,11 +102,12 @@ public class Activity_SignUp extends AppCompatActivity {
                             String userID = mAuth.getCurrentUser().getUid();
 
                             Model_User newUser = new Model_User(userID, "", email_edit.getText().toString(),
-                                    "", "", "", "", "4141");
+                                    "", "", "", "", "");
 
                             userDataBase.child(mAuth.getCurrentUser().getUid()).setValue(newUser);
 
-                            Intent intent = new Intent(getApplicationContext(), Activity_Profile.class);
+                            Intent intent = new Intent(getApplicationContext(), Activity_Pin_Code_Create.class);
+                            intent.putExtra("Model_User", newUser);
                             startActivity(intent);
 
                         }

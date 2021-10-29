@@ -12,7 +12,8 @@
     <string name="sex">Пол</string>
     <string name="city">Город</string>
     <string name="birthday">Дата рождения</string>
-    <string name="cancel">Назад</string>
+    <string name="cancel1">Назад</string>
+    <string name="cancel2">Отмена</string>
     <string name="save">Сохранить</string>
     <string name="next">Далее</string>
     <string name="change_login">Изменить логин</string>
@@ -29,4 +30,20 @@
     <string name="crop_image_menu_flip_vertically">Отразить по вертикали</string>
     <string name="pick_image_intent_chooser_tittle">ыбрать источник</string>
     <string name="crop_image_menu_crop">Обрезать</string>
+    <string name="_1">1</string>
+    <string name="_2">2</string>
+    <string name="_3">3</string>
+    <string name="_4">4</string>
+    <string name="_5">5</string>
+    <string name="_6">6</string>
+    <string name="_7">7</string>
+    <string name="_8">8</string>
+    <string name="_9">9</string>
+    <string name="exit1">Выход</string>
+    <string name="exit2">Выйти</string>
+    <string name="_0">0</string>
+    <string name="attention_question">Точно хотите выйти?</string>
+    <string name="attention_text">Код сбросится: в приложении нужно будет авторизоваться заново</string>
+    <string name="set_access_code">Задайте код доступа</string>
+    <string name="repeat_access_code">Повторите код доступа</string>
 </resources>

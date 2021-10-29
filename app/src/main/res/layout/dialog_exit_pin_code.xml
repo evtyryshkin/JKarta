@@ -10,41 +10,26 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
-        android:layout_marginBottom="24dp"
-        android:text="@string/change_login"
+        android:layout_marginBottom="16dp"
+        android:text="@string/attention_question"
         android:textColor="@color/secondary_500"
         android:textSize="16sp" />
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/login_layout"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+    <TextView
+        android:id="@+id/attention_text"
         android:layout_width="match_parent"
-        android:layout_height="74dp"
+        android:layout_height="wrap_content"
         android:layout_below="@+id/tittle"
         android:layout_marginHorizontal="16dp"
-        android:hint="@string/enter_login"
-        android:textColorHint="@color/primary_200"
-        app:endIconMode="clear_text"
-        app:endIconTint="@color/primary_500"
-        app:errorTextColor="@color/error"
-        app:boxStrokeErrorColor="@color/error"
-        app:errorIconTint="@color/error">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/edit"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="text"
-            android:textColor="@color/secondary_500"
-            android:textSize="16sp"
-            android:maxLength="25"/>
-    </com.google.android.material.textfield.TextInputLayout>
+        android:layout_marginBottom="10dp"
+        android:text="@string/attention_text"
+        android:textSize="14sp"
+        android:textColor="@color/secondary_500"/>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/login_layout"
+        android:layout_below="@+id/attention_text"
         android:layout_marginHorizontal="16dp"
         android:orientation="horizontal">
 
@@ -57,7 +42,7 @@
             android:layout_marginEnd="8dp"
             android:layout_weight="1"
             android:stateListAnimator="@null"
-            android:text="@string/cancel1"
+            android:text="@string/cancel2"
             android:textAllCaps="false" />
 
         <com.google.android.material.button.MaterialButton
@@ -69,9 +54,8 @@
             android:layout_marginStart="8dp"
             android:layout_weight="1"
             android:stateListAnimator="@null"
-            android:text="@string/save"
-            android:textAllCaps="false"
-            android:enabled="true"/>
+            android:text="@string/exit2"
+            android:textAllCaps="false"/>
     </LinearLayout>
 
 </RelativeLayout>

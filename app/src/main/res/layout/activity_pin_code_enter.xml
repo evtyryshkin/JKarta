@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Activity_Pin_Code">
+    tools:context=".Activity_Pin_Code_Enter">
 
     <RelativeLayout
         android:id="@+id/layout_profile_image"
@@ -42,7 +42,6 @@
         android:layout_below="@id/layout_profile_image"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp"
-        android:text="tyryshkin-e@mail.ru"
         android:textColor="@color/secondary_500"
         android:textSize="16sp" />
 
@@ -60,28 +59,32 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="14dp"
-            android:src="@drawable/pin_grey" />
+            android:src="@drawable/pin_grey"
+            tools:ignore="ContentDescription" />
 
         <ImageView
             android:id="@+id/pin_2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="14dp"
-            android:src="@drawable/pin_grey" />
+            android:src="@drawable/pin_grey"
+            tools:ignore="ContentDescription"/>
 
         <ImageView
             android:id="@+id/pin_3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="14dp"
-            android:src="@drawable/pin_grey" />
+            android:src="@drawable/pin_grey"
+            tools:ignore="ContentDescription"/>
 
         <ImageView
             android:id="@+id/pin_4"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="14dp"
-            android:src="@drawable/pin_grey" />
+            android:src="@drawable/pin_grey"
+            tools:ignore="ContentDescription"/>
 
     </LinearLayout>
 
@@ -107,7 +110,7 @@
                 android:layout_marginHorizontal="16dp"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="1"
+                android:text="@string/_1"
                 android:textColor="@color/secondary_500"
                 android:textSize="32sp" />
 
@@ -118,7 +121,7 @@
                 android:layout_marginHorizontal="16dp"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="2"
+                android:text="@string/_2"
                 android:textColor="@color/secondary_500"
                 android:textSize="32sp" />
 
@@ -129,7 +132,7 @@
                 android:layout_marginHorizontal="16dp"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="3"
+                android:text="@string/_3"
                 android:textColor="@color/secondary_500"
                 android:textSize="32sp" />
         </LinearLayout>
@@ -149,7 +152,7 @@
                 android:layout_marginHorizontal="16dp"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="4"
+                android:text="@string/_4"
                 android:textColor="@color/secondary_500"
                 android:textSize="32sp" />
 
@@ -160,7 +163,7 @@
                 android:layout_marginHorizontal="16dp"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="5"
+                android:text="@string/_5"
                 android:textColor="@color/secondary_500"
                 android:textSize="32sp" />
 
@@ -171,7 +174,7 @@
                 android:layout_marginHorizontal="16dp"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="6"
+                android:text="@string/_6"
                 android:textColor="@color/secondary_500"
                 android:textSize="32sp" />
         </LinearLayout>
@@ -191,7 +194,7 @@
                 android:layout_marginHorizontal="16dp"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="7"
+                android:text="@string/_7"
                 android:textColor="@color/secondary_500"
                 android:textSize="32sp" />
 
@@ -202,7 +205,7 @@
                 android:layout_marginHorizontal="16dp"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="8"
+                android:text="@string/_8"
                 android:textColor="@color/secondary_500"
                 android:textSize="32sp" />
 
@@ -213,7 +216,7 @@
                 android:layout_marginHorizontal="16dp"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="9"
+                android:text="@string/_9"
                 android:textColor="@color/secondary_500"
                 android:textSize="32sp" />
 
@@ -235,7 +238,7 @@
                 android:layout_weight="1"
                 android:layout_gravity="center"
                 android:gravity="center"
-                android:text="Выход"
+                android:text="@string/exit1"
                 android:textColor="@color/dark_grey"
                 android:textSize="16sp" />
 
@@ -246,7 +249,7 @@
                 android:layout_marginHorizontal="16dp"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="0"
+                android:text="@string/_0"
                 android:textColor="@color/secondary_500"
                 android:textSize="32sp" />
 
@@ -258,7 +261,8 @@
                 android:layout_weight="1"
                 android:gravity="center"
                 android:src="@drawable/ic_backspace"
-                android:scaleType="centerInside"/>
+                android:scaleType="centerInside"
+                tools:ignore="ContentDescription"/>
         </LinearLayout>
 
     </RelativeLayout>

@@ -9,12 +9,12 @@ import java.io.Serializable;
 
 public class Model_User implements Parcelable {
 
-    private String ID, image, email, login, city, sex, birthday, pin_code;
+    private String ID, image, email, login, city, sex, birthday, pin_code, fingerAuth;
 
     public Model_User() {
     }
 
-    public Model_User(String ID, String image, String email, String login, String city, String sex, String birthday, String pin_code) {
+    public Model_User(String ID, String image, String email, String login, String city, String sex, String birthday, String pin_code, String fingerAuth) {
         this.ID = ID;
         this.image = image;
         this.email = email;
@@ -23,6 +23,7 @@ public class Model_User implements Parcelable {
         this.sex = sex;
         this.birthday = birthday;
         this.pin_code = pin_code;
+        this.fingerAuth = fingerAuth;
     }
 
     protected Model_User(Parcel in) {
@@ -34,6 +35,7 @@ public class Model_User implements Parcelable {
         sex = in.readString();
         birthday = in.readString();
         pin_code = in.readString();
+        fingerAuth = in.readString();
     }
 
     public static final Creator<Model_User> CREATOR = new Creator<Model_User>() {
@@ -112,6 +114,14 @@ public class Model_User implements Parcelable {
         this.pin_code = pin_code;
     }
 
+    public String getFingerAuth() {
+        return fingerAuth;
+    }
+
+    public void setFingerAuth(String fingerAuth) {
+        this.fingerAuth = fingerAuth;
+    }
+
     @NonNull
     @Override
     public String toString() {
@@ -133,5 +143,6 @@ public class Model_User implements Parcelable {
         parcel.writeString(sex);
         parcel.writeString(birthday);
         parcel.writeString(pin_code);
+        parcel.writeString(fingerAuth);
     }
 }

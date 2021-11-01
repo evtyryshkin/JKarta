@@ -11,4 +11,9 @@ public class Activity_General_Space_App extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_general_space_app);
     }
+
+    @Override
+    public void onBackPressed() {
+//Должно быть пустым!!!
+    }
 }

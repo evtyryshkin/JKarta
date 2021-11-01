@@ -262,7 +262,7 @@
                 android:gravity="center"
                 android:src="@drawable/ic_backspace"
                 android:scaleType="centerInside"
-                tools:ignore="ContentDescription"/>
+                tools:ignore="ContentDescription" />
         </LinearLayout>
 
     </RelativeLayout>

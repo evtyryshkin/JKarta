@@ -1,5 +1,6 @@
 package space.tyryshkin.jkarta;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
@@ -7,9 +8,13 @@ import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.hardware.biometrics.BiometricManager;
+import androidx.biometric.BiometricPrompt;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +32,7 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.concurrent.Executor;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -44,9 +50,12 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private DatabaseReference userDataBase;
     private String USER_KEY = "users";
+    private androidx.biometric.BiometricManager biometricManager;
+    private BiometricPrompt biometricPrompt;
 
     private ArrayList<ImageView> listOfPin = new ArrayList<>();
 
+    @RequiresApi(api = Build.VERSION_CODES.P)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,8 +66,10 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
         setUserData();
         onClicks();
         onTouches();
+
     }
 
+    @SuppressLint("SwitchIntDef")
     private void init() {
         window = Activity_Pin_Code_Enter.this.getWindow();
         profile_simple_image = findViewById(R.id.profile_simple_image);
@@ -91,41 +102,52 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
         user = getIntent().getParcelableExtra("Model_User");
         mAuth = FirebaseAuth.getInstance();
         userDataBase = FirebaseDatabase.getInstance().getReference(USER_KEY);
+
+        if (user.getFingerAuth().equals("yes")) {
+            biometricManager = androidx.biometric.BiometricManager.from(getApplicationContext());
+            switch (biometricManager.canAuthenticate()) {
+                case BiometricManager.BIOMETRIC_SUCCESS:
+                    backspace.setImageResource(R.drawable.ic_fingerprint);
+                    Log.d("FINGER_PRINT", "Приложение может аутентифицировать при помощи сканера отпечатка пальца");
+                    break;
+                case BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE:
+                    Log.e("FINGER_PRINT", "На устройстве отсутствует сканер отпечатка пальца");
+                    backspace.setImageResource(R.drawable.ic_backspace);
+                    break;
+                case BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE:
+                    Log.e("FINGER_PRINT", "Сканер отпечатка пальца сейчас недоступен");
+                    backspace.setImageResource(R.drawable.ic_backspace);
+                    break;
+                case BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED:
+                    backspace.setImageResource(R.drawable.ic_backspace);
+                    break;
+            }
+        }
+        invokeDialogFingerprint();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.P)
+    @SuppressLint({"UseCompatLoadingForDrawables", "WrongConstant"})
     private void onClicks() {
-        num_0.setOnClickListener(view -> {
-            addNumber("0");
-        });
-        num_1.setOnClickListener(view -> {
-            addNumber("1");
-        });
-        num_2.setOnClickListener(view -> {
-            addNumber("2");
-        });
-        num_3.setOnClickListener(view -> {
-            addNumber("3");
-        });
-        num_4.setOnClickListener(view -> {
-            addNumber("4");
-        });
-        num_5.setOnClickListener(view -> {
-            addNumber("5");
-        });
-        num_6.setOnClickListener(view -> {
-            addNumber("6");
-        });
-        num_7.setOnClickListener(view -> {
-            addNumber("7");
-        });
-        num_8.setOnClickListener(view -> {
-            addNumber("8");
-        });
-        num_9.setOnClickListener(view -> {
-            addNumber("9");
-        });
+        num_0.setOnClickListener(view -> addNumber("0"));
+        num_1.setOnClickListener(view -> addNumber("1"));
+        num_2.setOnClickListener(view -> addNumber("2"));
+        num_3.setOnClickListener(view -> addNumber("3"));
+        num_4.setOnClickListener(view -> addNumber("4"));
+        num_5.setOnClickListener(view -> addNumber("5"));
+        num_6.setOnClickListener(view -> addNumber("6"));
+        num_7.setOnClickListener(view -> addNumber("7"));
+        num_8.setOnClickListener(view -> addNumber("8"));
+        num_9.setOnClickListener(view -> addNumber("9"));
         backspace.setOnClickListener(view -> {
-            removeNumber();
+            if (pin_code.length() != 0) {
+                removeNumber();
+            } else {
+                if (biometricManager.canAuthenticate() == BiometricManager.BIOMETRIC_SUCCESS && user.getFingerAuth().equals("yes")) {
+                    invokeDialogFingerprint();
+                }
+
+            }
         });
         exit.setOnClickListener(view -> {
             openDialogExit();
@@ -274,6 +296,7 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
             logicPin();
         }
     }
+
     private void removeNumber() {
         if (pin_code != null && pin_code.length() > 0) {
             pin_code = pin_code.substring(0, pin_code.length() - 1);
@@ -284,14 +307,23 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
     @SuppressLint("UseCompatLoadingForDrawables")
     private void logicPin() {
         if (pin_code.length() == 0) {
+            if (user.getFingerAuth().equals("yes")) {
+                backspace.setImageResource(R.drawable.ic_fingerprint);
+            } else {
+                backspace.setImageResource(R.drawable.ic_backspace);
+            }
             setColorPin(listOfPin, 0);
         } else if (pin_code.length() == 1) {
+            backspace.setImageResource(R.drawable.ic_backspace);
             setColorPin(listOfPin, 1);
         } else if (pin_code.length() == 2) {
+            backspace.setImageResource(R.drawable.ic_backspace);
             setColorPin(listOfPin, 2);
         } else if (pin_code.length() == 3) {
+            backspace.setImageResource(R.drawable.ic_backspace);
             setColorPin(listOfPin, 3);
         } else if (pin_code.length() == 4) {
+            backspace.setImageResource(R.drawable.ic_backspace);
             setColorPin(listOfPin, 4);
 
             if (user.getPin_code().equals(pin_code)) {
@@ -299,10 +331,16 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
                 startActivity(intent);
             } else {
                 pin_code = "";
+                if (user.getFingerAuth().equals("yes")) {
+                    backspace.setImageResource(R.drawable.ic_fingerprint);
+                } else {
+                    backspace.setImageResource(R.drawable.ic_backspace);
+                }
                 onShakeImage();
             }
         }
     }
+
     private void setColorPin(ArrayList<ImageView> listOfPin, int count) {
         for (int i = 0; i < 4; i++) {
             listOfPin.get(i).setImageResource(R.drawable.pin_grey);
@@ -354,6 +392,7 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
             Picasso.get().load(user.getImage()).into(profile_image);
         }
     }
+
     private void setStatusBarColor() {
         window.setStatusBarColor(ContextCompat.getColor(Activity_Pin_Code_Enter.this, R.color.white));
     }
@@ -367,6 +406,7 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
         save.setOnClickListener(view -> {
             dialog.dismiss();
             user.setPin_code("");
+            user.setFingerAuth("no");
             userDataBase.child(mAuth.getCurrentUser().getUid()).setValue(user);
             Intent intent = new Intent(Activity_Pin_Code_Enter.this, Activity_SignIn.class);
             startActivity(intent);
@@ -386,5 +426,40 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
         dialog.setCancelable(false);
 
         return dialog;
+    }
+
+    private void invokeDialogFingerprint() {
+        Executor executor = ContextCompat.getMainExecutor(this);
+
+        biometricPrompt = new BiometricPrompt(Activity_Pin_Code_Enter.this, executor, new BiometricPrompt.AuthenticationCallback() {
+            @Override
+            public void onAuthenticationError(int errorCode, CharSequence errString) {
+                super.onAuthenticationError(errorCode, errString);
+            }
+
+            @Override
+            public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result) {
+                super.onAuthenticationSucceeded(result);
+                Intent intent = new Intent(Activity_Pin_Code_Enter.this, Activity_General_Space_App.class);
+                startActivity(intent);
+            }
+
+            @Override
+            public void onAuthenticationFailed() {
+                super.onAuthenticationFailed();
+            }
+        });
+
+        BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
+                .setTitle(getResources().getString(R.string.enter_app))
+                .setNegativeButtonText(getResources().getString(R.string.cancel2))
+                .build();
+
+        biometricPrompt.authenticate(promptInfo);
+    }
+
+    @Override
+    public void onBackPressed() {
+//Должно быть пустым!!!
     }
 }

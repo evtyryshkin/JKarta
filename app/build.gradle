@@ -44,6 +44,7 @@ dependencies {
 
     implementation 'com.theartofdev.edmodo:android-image-cropper:2.4.+'
     implementation 'de.hdodenhof:circleimageview:3.0.0'
-    implementation 'com.google.firebase:firebase-storage:11.0.4'
+    implementation 'com.google.firebase:firebase-storage:20.0.0'
     implementation 'com.squareup.picasso:picasso:2.71828'
+    implementation 'androidx.biometric:biometric:1.1.0'
 }

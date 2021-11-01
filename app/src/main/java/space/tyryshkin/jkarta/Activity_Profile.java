@@ -587,4 +587,9 @@ public class Activity_Profile extends AppCompatActivity {
         }
         return false;
     }
+
+    @Override
+    public void onBackPressed() {
+//Должно быть пустым!!!
+    }
 }

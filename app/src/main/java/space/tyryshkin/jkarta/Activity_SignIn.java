@@ -113,4 +113,9 @@ public class Activity_SignIn extends AppCompatActivity {
             return true;
         }
     }
+
+    @Override
+    public void onBackPressed() {
+//Должно быть пустым!!!
+    }
 }

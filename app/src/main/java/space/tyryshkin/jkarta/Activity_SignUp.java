@@ -102,7 +102,7 @@ public class Activity_SignUp extends AppCompatActivity {
                             String userID = mAuth.getCurrentUser().getUid();
 
                             Model_User newUser = new Model_User(userID, "", email_edit.getText().toString(),
-                                    "", "", "", "", "");
+                                    "", "", "", "", "", "no");
 
                             userDataBase.child(mAuth.getCurrentUser().getUid()).setValue(newUser);
 

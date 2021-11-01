@@ -1,18 +1,25 @@
 package space.tyryshkin.jkarta;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.biometric.BiometricPrompt;
 import androidx.core.content.ContextCompat;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.PorterDuff;
+import android.hardware.biometrics.BiometricManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -23,11 +30,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
+import java.util.Objects;
+import java.util.concurrent.Executor;
 
 public class Activity_Pin_Code_Create extends AppCompatActivity {
     private Window window;
@@ -44,6 +55,8 @@ public class Activity_Pin_Code_Create extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private DatabaseReference userDataBase;
     private String USER_KEY = "users";
+    private androidx.biometric.BiometricManager biometricManager;
+    private BiometricPrompt biometricPrompt;
 
     private ArrayList<ImageView> listOfPin1 = new ArrayList<>();
     private ArrayList<ImageView> listOfPin2 = new ArrayList<>();
@@ -59,6 +72,7 @@ public class Activity_Pin_Code_Create extends AppCompatActivity {
         onTouches();
     }
 
+    @SuppressLint("SwitchIntDef")
     private void init() {
         window = Activity_Pin_Code_Create.this.getWindow();
 
@@ -98,6 +112,20 @@ public class Activity_Pin_Code_Create extends AppCompatActivity {
         user = getIntent().getParcelableExtra("Model_User");
         mAuth = FirebaseAuth.getInstance();
         userDataBase = FirebaseDatabase.getInstance().getReference(USER_KEY);
+        biometricManager = androidx.biometric.BiometricManager.from(getApplicationContext());
+        switch (biometricManager.canAuthenticate()) {
+            case BiometricManager.BIOMETRIC_SUCCESS:
+                Log.d("FINGER_PRINT", "Приложение может аутентифицировать при помощи сканера отпечатка пальца");
+                break;
+            case BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE:
+                Log.e("FINGER_PRINT", "На устройстве отсутствует сканер отпечатка пальца");
+                break;
+            case BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE:
+                Log.e("FINGER_PRINT", "Сканер отпечатка пальца сейчас недоступен");
+                break;
+            case BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED:
+                break;
+        }
     }
 
     private void onClicks() {
@@ -295,7 +323,7 @@ public class Activity_Pin_Code_Create extends AppCompatActivity {
         }
     }
 
-    @SuppressLint({"UseCompatLoadingForDrawables", "ShowToast"})
+    @SuppressLint({"UseCompatLoadingForDrawables", "ShowToast", "WrongConstant"})
     private void logicPin(ArrayList<ImageView> listOfPin, String pin_code) {
         if (pin_code.length() == 0) {
             setColorPin(listOfPin, 0);
@@ -315,14 +343,34 @@ public class Activity_Pin_Code_Create extends AppCompatActivity {
                 if (pin_code_1.equals(pin_code_2)) {
                     user.setPin_code(pin_code_1);
                     userDataBase.child(mAuth.getCurrentUser().getUid()).setValue(user);
-                    Intent intent = new Intent(Activity_Pin_Code_Create.this, Activity_Profile.class);
-                    startActivity(intent);
+
+                    if (biometricManager.canAuthenticate() == BiometricManager.BIOMETRIC_SUCCESS) {
+                        Dialog dialog = createDialog(R.layout.dialog_set_finger_print);
+                        MaterialButton no = dialog.findViewById(R.id.btn_no);
+                        MaterialButton yes = dialog.findViewById(R.id.btn_yes);
+
+                        yes.setOnClickListener(view -> {
+                            dialog.dismiss();
+                            invokeDialogFingerprint();
+                        });
+
+                        no.setOnClickListener(view -> {
+                            dialog.dismiss();
+                            Intent intent = new Intent(Activity_Pin_Code_Create.this, Activity_Profile.class);
+                            startActivity(intent);
+                        });
+                        dialog.show();
+                    } else {
+                        Intent intent = new Intent(Activity_Pin_Code_Create.this, Activity_Profile.class);
+                        startActivity(intent);
+                    }
+
                 } else {
                     pin_code_1 = "";
                     pin_code_2 = "";
                     onShakeImage();
 
-                    Toast toast = Toast.makeText(this, "Коды доступа не совпадают", Toast.LENGTH_LONG);
+                    Toast toast = Toast.makeText(this, getResources().getString(R.string.codes_is_not_coincidence), Toast.LENGTH_LONG);
                     toast.setGravity(Gravity.CENTER, 0, 0);
                     View view = toast.getView();
                     view.getBackground().setColorFilter(getColor(R.color.white), PorterDuff.Mode.SRC_IN);
@@ -387,5 +435,53 @@ public class Activity_Pin_Code_Create extends AppCompatActivity {
 
     private void setStatusBarColor() {
         window.setStatusBarColor(ContextCompat.getColor(Activity_Pin_Code_Create.this, R.color.white));
+    }
+
+    @SuppressLint("UseCompatLoadingForDrawables")
+    private Dialog createDialog(int layout) {
+        Dialog dialog = new Dialog(Activity_Pin_Code_Create.this);
+        dialog.setContentView(layout);
+        dialog.getWindow().setBackgroundDrawable(getDrawable(R.drawable.fon_with_margin));
+        dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        dialog.setCancelable(false);
+
+        return dialog;
+    }
+
+    private void invokeDialogFingerprint() {
+        Executor executor = ContextCompat.getMainExecutor(this);
+
+        biometricPrompt = new BiometricPrompt(Activity_Pin_Code_Create.this, executor, new BiometricPrompt.AuthenticationCallback() {
+            @Override
+            public void onAuthenticationError(int errorCode, CharSequence errString) {
+                super.onAuthenticationError(errorCode, errString);
+            }
+
+            @Override
+            public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result) {
+                super.onAuthenticationSucceeded(result);
+                user.setFingerAuth("yes");
+                userDataBase.child(mAuth.getCurrentUser().getUid()).setValue(user);
+                Intent intent = new Intent(Activity_Pin_Code_Create.this, Activity_Profile.class);
+                startActivity(intent);
+            }
+
+            @Override
+            public void onAuthenticationFailed() {
+                super.onAuthenticationFailed();
+            }
+        });
+
+        BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
+                .setTitle(getResources().getString(R.string.add_finger_print))
+                .setNegativeButtonText(getResources().getString(R.string.cancel2))
+                .build();
+
+        biometricPrompt.authenticate(promptInfo);
+    }
+
+    @Override
+    public void onBackPressed() {
+//Должно быть пустым!!!
     }
 }

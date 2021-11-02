@@ -52,4 +52,12 @@
     <string name="codes_is_not_coincidence">Коды доступа не совпадают</string>
     <string name="enter_app">Вход в приложение</string>
     <string name="add_finger_print">Добавление отпечатка пальца</string>
+    <string name="reset_password">Восстановление пароля</string>
+    <string name="reset_password_toast">На почту направлено письмо для восстановления пароля</string>
+    <string name="failure">Ошибка! Попробуйте повторить попытку</string>
+    <string name="home">Главная</string>
+    <string name="cards">Все карты</string>
+    <string name="settings">Настройки</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
 </resources>

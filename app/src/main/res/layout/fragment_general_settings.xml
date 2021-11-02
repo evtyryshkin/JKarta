@@ -1,14 +1,228 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Fragment_General_Settings">
+    tools:context=".Activity_Profile">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="General_Settings" />
+        android:layout_marginHorizontal="4dp"
+        android:padding="8dp">
 
-</FrameLayout>
+        <RelativeLayout
+            android:id="@+id/profileStroke"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:background="@drawable/fon_white"
+            android:elevation="8dp"
+            android:paddingHorizontal="4dp"
+            android:paddingVertical="12dp">
+
+            <ImageView
+                android:id="@+id/ic_profile"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_marginVertical="2dp"
+                android:layout_marginHorizontal="8dp"
+                android:src="@drawable/ic_settings_profile"
+                android:scaleType="centerInside"
+                android:background="@drawable/fon_primary_500"/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@+id/ic_profile"
+                android:layout_centerVertical="true"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/profile_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="@string/profile"
+                    android:textColor="@color/secondary_500"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/profile_sub_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginEnd="14dp"
+                    android:text="@string/settings_profile"
+                    android:textColor="@color/dark_grey"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/authStroke"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/profileStroke"
+            android:layout_margin="10dp"
+            android:background="@drawable/fon_white"
+            android:elevation="8dp"
+            android:paddingHorizontal="4dp"
+            android:paddingVertical="12dp">
+
+            <ImageView
+                android:id="@+id/ic_auth"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_marginVertical="2dp"
+                android:layout_marginHorizontal="8dp"
+                android:src="@drawable/ic_settings_auth"
+                android:scaleType="centerInside"
+                android:background="@drawable/fon_primary_500"/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@+id/ic_auth"
+                android:layout_centerVertical="true"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/auth_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="@string/authorisation"
+                    android:textColor="@color/secondary_500"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/auth_sub_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginEnd="14dp"
+                    android:text="@string/settings_authorisation"
+                    android:textColor="@color/dark_grey"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/notificationStroke"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/authStroke"
+            android:layout_margin="10dp"
+            android:background="@drawable/fon_white"
+            android:elevation="8dp"
+            android:paddingHorizontal="4dp"
+            android:paddingVertical="12dp">
+
+            <ImageView
+                android:id="@+id/ic_notification"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_marginVertical="2dp"
+                android:layout_marginHorizontal="8dp"
+                android:src="@drawable/ic_settings_notification"
+                android:scaleType="centerInside"
+                android:background="@drawable/fon_primary_500"/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@+id/ic_notification"
+                android:layout_centerVertical="true"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/notification_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="@string/notification"
+                    android:textColor="@color/secondary_500"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/notification_sub_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginEnd="14dp"
+                    android:text="@string/settings_notification"
+                    android:textColor="@color/dark_grey"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/applicationStroke"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/notificationStroke"
+            android:layout_margin="10dp"
+            android:background="@drawable/fon_white"
+            android:elevation="8dp"
+            android:paddingHorizontal="4dp"
+            android:paddingVertical="12dp">
+
+            <ImageView
+                android:id="@+id/ic_app"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_marginVertical="2dp"
+                android:layout_marginHorizontal="8dp"
+                android:src="@drawable/ic_settings_settings"
+                android:scaleType="centerInside"
+                android:background="@drawable/fon_primary_500"/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@+id/ic_app"
+                android:layout_centerVertical="true"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/app_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="@string/application"
+                    android:textColor="@color/secondary_500"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/app_sub_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginEnd="14dp"
+                    android:text="@string/settings_application"
+                    android:textColor="@color/dark_grey"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+</RelativeLayout>

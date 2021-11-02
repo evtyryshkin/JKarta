@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
+    <color name="primary_50">#FEECE0</color>
     <color name="primary_200">#FFA873</color>
     <color name="primary_200_alpha_30">#33FFA873</color>
     <color name="primary_500">#FF6200</color>

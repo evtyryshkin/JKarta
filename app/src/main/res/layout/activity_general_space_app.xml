@@ -22,7 +22,8 @@
             android:background="@color/primary_500"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-            app:titleTextColor="@color/grey">
+            app:titleTextColor="@color/white"
+            android:layout_gravity="center_horizontal">
         </androidx.appcompat.widget.Toolbar>
 
         <FrameLayout

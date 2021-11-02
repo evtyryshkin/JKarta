@@ -60,4 +60,11 @@
     <string name="settings">Настройки</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="settings_profile">Настройки профиля</string>
+    <string name="authorisation">Вход и авторизация</string>
+    <string name="settings_authorisation">Настройки входа по отпечатку и коду доступа</string>
+    <string name="notification">Уведомления</string>
+    <string name="settings_notification">Настройки push-уведомлений</string>
+    <string name="application">Приложение</string>
+    <string name="settings_application">Настройки приложения</string>
 </resources>

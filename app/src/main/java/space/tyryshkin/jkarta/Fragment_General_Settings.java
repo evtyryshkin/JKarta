@@ -1,64 +1,114 @@
 package space.tyryshkin.jkarta;
 
+import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
+import android.widget.Toast;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link Fragment_General_Settings#newInstance} factory method to
- * create an instance of this fragment.
- */
+import java.util.Objects;
+
 public class Fragment_General_Settings extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private View view;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public Fragment_General_Settings() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment Fragment_General_Settings.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static Fragment_General_Settings newInstance(String param1, String param2) {
-        Fragment_General_Settings fragment = new Fragment_General_Settings();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-    }
+    private RelativeLayout profileStroke, authStroke, notificationStroke, applicationStroke;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_general_settings, container, false);
+        view = inflater.inflate(R.layout.fragment_general_settings, container, false);
+
+        init();
+        onClicks();
+        onTouches();
+
+        return view;
     }
+
+    private void init() {
+        //Изменяем текст в тулбаре
+        Objects.requireNonNull(((AppCompatActivity) requireActivity())
+                .getSupportActionBar())
+                .setTitle(getResources().getString(R.string.settings));
+
+        profileStroke = view.findViewById(R.id.profileStroke);
+        authStroke = view.findViewById(R.id.authStroke);
+        notificationStroke = view.findViewById(R.id.notificationStroke);
+        applicationStroke = view.findViewById(R.id.applicationStroke);
+    }
+
+    private void onClicks() {
+        profileStroke.setOnClickListener((view) -> {
+            Intent intent = new Intent(getActivity(), Activity_Profile.class);
+            startActivity(intent);
+        });
+        authStroke.setOnClickListener((view) -> {
+            Toast.makeText(getActivity(), "Вход и авторизация", Toast.LENGTH_SHORT).show();
+        });
+        authStroke.setOnClickListener((view) -> {
+            Toast.makeText(getActivity(), "Уведомления", Toast.LENGTH_SHORT).show();
+        });
+        authStroke.setOnClickListener((view) -> {
+            Toast.makeText(getActivity(), "Приложение", Toast.LENGTH_SHORT).show();
+        });
+    }
+
+    @SuppressLint("UseCompatLoadingForDrawables")
+    private void onTouches() {
+        //noinspection AndroidLintClickableViewAccessibility
+        profileStroke.setOnTouchListener((view, motionEvent) -> {
+            if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                profileStroke.setBackgroundDrawable(getResources().getDrawable(R.drawable.fon_grey));
+                return false;
+            } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                profileStroke.setBackgroundDrawable(getResources().getDrawable(R.drawable.fon_white));
+                return false;
+            }
+            return false;
+        });
+        //noinspection AndroidLintClickableViewAccessibility
+        authStroke.setOnTouchListener((view, motionEvent) -> {
+            if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                authStroke.setBackgroundDrawable(getResources().getDrawable(R.drawable.fon_grey));
+                return true;
+            } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                authStroke.setBackgroundDrawable(getResources().getDrawable(R.drawable.fon_white));
+                return true;
+            }
+            return false;
+        });
+        //noinspection AndroidLintClickableViewAccessibility
+        notificationStroke.setOnTouchListener((view, motionEvent) -> {
+            if(motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                notificationStroke.setBackground(getResources().getDrawable(R.drawable.fon_grey));
+                return true;
+            } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                notificationStroke.setBackground(getResources().getDrawable(R.drawable.fon_white));
+                return true;
+            }
+            return false;
+        });
+        //noinspection AndroidLintClickableViewAccessibility
+        applicationStroke.setOnTouchListener((view, motionEvent) -> {
+            if(motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                applicationStroke.setBackground(getResources().getDrawable(R.drawable.fon_grey));
+                return true;
+            } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                applicationStroke.setBackground(getResources().getDrawable(R.drawable.fon_white));
+                return true;
+            }
+            return false;
+        });
+    }
+
+
 }

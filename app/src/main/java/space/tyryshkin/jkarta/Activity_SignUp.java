@@ -26,6 +26,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -78,9 +79,7 @@ public class Activity_SignUp extends AppCompatActivity {
         });
 
         btn_sign_up.setOnClickListener(view -> {
-            //Прячем клавиатуру
             hideKeyBoard();
-
             onChanges();
 
             boolean validateEmail = checkValidateEmail();
@@ -99,15 +98,16 @@ public class Activity_SignUp extends AppCompatActivity {
                                 }
                             });
 
-                            String userID = mAuth.getCurrentUser().getUid();
+                            FirebaseUser firebaseUser = mAuth.getCurrentUser();
+                            String userID = firebaseUser.getUid();
 
-                            Model_User newUser = new Model_User(userID, "", email_edit.getText().toString(),
-                                    "", "", "", "", "", "no");
+                            Model_User newUser = new Model_User(userID, "", firebaseUser.getEmail(),
+                                    "", "", "", "");
 
                             userDataBase.child(mAuth.getCurrentUser().getUid()).setValue(newUser);
 
                             Intent intent = new Intent(getApplicationContext(), Activity_Pin_Code_Create.class);
-                            intent.putExtra("Model_User", newUser);
+                            //intent.putExtra("Model_User", newUser);
                             startActivity(intent);
 
                         } else {

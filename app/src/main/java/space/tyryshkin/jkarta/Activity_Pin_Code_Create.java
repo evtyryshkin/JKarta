@@ -1,5 +1,6 @@
 package space.tyryshkin.jkarta;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.biometric.BiometricPrompt;
 import androidx.core.content.ContextCompat;
@@ -8,19 +9,18 @@ import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
 import android.hardware.biometrics.BiometricManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
@@ -30,11 +30,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -45,21 +41,22 @@ public class Activity_Pin_Code_Create extends AppCompatActivity {
 
     private TextView set_access_code, num_0, num_1, num_2, num_3, num_4, num_5, num_6, num_7, num_8, num_9;
     private ImageView pin_1, pin_2, pin_3, pin_4, pin_5, pin_6, pin_7, pin_8, backspace;
-    LinearLayout layout_pin2;
+    private LinearLayout layout_pin2;
     private ImageButton skip;
 
     private String pin_code_1 = "";
     private String pin_code_2 = "";
 
-    private Model_User user;
     private FirebaseAuth mAuth;
-    private DatabaseReference userDataBase;
-    private String USER_KEY = "users";
     private androidx.biometric.BiometricManager biometricManager;
     private BiometricPrompt biometricPrompt;
 
-    private ArrayList<ImageView> listOfPin1 = new ArrayList<>();
-    private ArrayList<ImageView> listOfPin2 = new ArrayList<>();
+    private final ArrayList<ImageView> listOfPin1 = new ArrayList<>();
+    private final ArrayList<ImageView> listOfPin2 = new ArrayList<>();
+
+    private SharedPreferences sharedPreferences;
+    private SharedPreferences.Editor editor;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,7 +69,7 @@ public class Activity_Pin_Code_Create extends AppCompatActivity {
         onTouches();
     }
 
-    @SuppressLint("SwitchIntDef")
+    @SuppressLint({"SwitchIntDef", "CommitPrefEdits"})
     private void init() {
         window = Activity_Pin_Code_Create.this.getWindow();
 
@@ -111,23 +108,11 @@ public class Activity_Pin_Code_Create extends AppCompatActivity {
 
         backspace = findViewById(R.id.backspace);
 
-        user = getIntent().getParcelableExtra("Model_User");
         mAuth = FirebaseAuth.getInstance();
-        userDataBase = FirebaseDatabase.getInstance().getReference(USER_KEY);
         biometricManager = androidx.biometric.BiometricManager.from(getApplicationContext());
-        switch (biometricManager.canAuthenticate()) {
-            case BiometricManager.BIOMETRIC_SUCCESS:
-                Log.d("FINGER_PRINT", "Приложение может аутентифицировать при помощи сканера отпечатка пальца");
-                break;
-            case BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE:
-                Log.e("FINGER_PRINT", "На устройстве отсутствует сканер отпечатка пальца");
-                break;
-            case BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE:
-                Log.e("FINGER_PRINT", "Сканер отпечатка пальца сейчас недоступен");
-                break;
-            case BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED:
-                break;
-        }
+
+        sharedPreferences = getSharedPreferences(Objects.requireNonNull(mAuth.getCurrentUser()).getUid(), MODE_PRIVATE);
+        editor = sharedPreferences.edit();
     }
 
     private void onClicks() {
@@ -344,11 +329,14 @@ public class Activity_Pin_Code_Create extends AppCompatActivity {
                 layout_pin2.setVisibility(View.VISIBLE);
             } else {
                 if (pin_code_1.equals(pin_code_2)) {
-                    user.setPin_code(pin_code_1);
-                    userDataBase.child(mAuth.getCurrentUser().getUid()).setValue(user);
+                    editor.putString(Model_User.PREFERENCES_PIN, pin_code_1);
+                    editor.apply();
 
-                    if (biometricManager.canAuthenticate() == BiometricManager.BIOMETRIC_SUCCESS) {
+                    if (biometricManager.canAuthenticate(androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK)
+                            == BiometricManager.BIOMETRIC_SUCCESS) {
                         Dialog dialog = createDialog(R.layout.dialog_set_finger_print);
+                        placeDialogBottom(dialog);
+
                         MaterialButton no = dialog.findViewById(R.id.btn_no);
                         MaterialButton yes = dialog.findViewById(R.id.btn_yes);
 
@@ -452,21 +440,33 @@ public class Activity_Pin_Code_Create extends AppCompatActivity {
 
         return dialog;
     }
+    private void placeDialogBottom(Dialog dialog) {
+        Window window = dialog.getWindow();
+        WindowManager.LayoutParams windowParams = window.getAttributes();
+
+        windowParams.gravity = Gravity.BOTTOM;
+        window.setAttributes(windowParams);
+    }
 
     private void invokeDialogFingerprint() {
         Executor executor = ContextCompat.getMainExecutor(this);
 
         biometricPrompt = new BiometricPrompt(Activity_Pin_Code_Create.this, executor, new BiometricPrompt.AuthenticationCallback() {
             @Override
-            public void onAuthenticationError(int errorCode, CharSequence errString) {
+            public void onAuthenticationError(int errorCode, @NonNull CharSequence errString) {
                 super.onAuthenticationError(errorCode, errString);
+
+                editor.putBoolean(Model_User.PREFERENCES_IS_HAS_FINGERPRINT, false);
+                editor.apply();
             }
 
             @Override
             public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result) {
                 super.onAuthenticationSucceeded(result);
-                user.setFingerAuth("yes");
-                userDataBase.child(mAuth.getCurrentUser().getUid()).setValue(user);
+
+                editor.putBoolean(Model_User.PREFERENCES_IS_HAS_FINGERPRINT, true);
+                editor.apply();
+
                 Intent intent = new Intent(Activity_Pin_Code_Create.this, Activity_Profile.class);
                 intent.putExtra("FROM_ACTIVITY", "Activity_Pin_Code_Create");
                 startActivity(intent);
@@ -475,6 +475,9 @@ public class Activity_Pin_Code_Create extends AppCompatActivity {
             @Override
             public void onAuthenticationFailed() {
                 super.onAuthenticationFailed();
+
+                editor.putBoolean(Model_User.PREFERENCES_IS_HAS_FINGERPRINT, false);
+                editor.apply();
             }
         });
 

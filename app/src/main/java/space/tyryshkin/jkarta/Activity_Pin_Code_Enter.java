@@ -2,13 +2,15 @@ package space.tyryshkin.jkarta;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.biometric.BiometricManager;
 import androidx.core.content.ContextCompat;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
-import android.hardware.biometrics.BiometricManager;
+import android.content.SharedPreferences;
+
 import androidx.biometric.BiometricPrompt;
 import android.os.Build;
 import android.os.Bundle;
@@ -46,14 +48,17 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
 
     private String pin_code = "";
 
-    private Model_User user;
     private FirebaseAuth mAuth;
     private DatabaseReference userDataBase;
     private String USER_KEY = "users";
     private androidx.biometric.BiometricManager biometricManager;
     private BiometricPrompt biometricPrompt;
 
-    private ArrayList<ImageView> listOfPin = new ArrayList<>();
+    private final ArrayList<ImageView> listOfPin = new ArrayList<>();
+
+    private SharedPreferences sharedPreferences;
+    private SharedPreferences.Editor editor;
+    private boolean isHasFingerprint;
 
     @RequiresApi(api = Build.VERSION_CODES.P)
     @Override
@@ -66,15 +71,21 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
         setUserData();
         onClicks();
         onTouches();
+
+        if (isHasFingerprint) {
+            invokeDialogFingerprint();
+        }
     }
 
-    @SuppressLint("SwitchIntDef")
+    @SuppressLint({"SwitchIntDef", "CommitPrefEdits"})
     private void init() {
         window = Activity_Pin_Code_Enter.this.getWindow();
+
         profile_simple_image = findViewById(R.id.profile_simple_image);
         profile_image = findViewById(R.id.profile_image);
         avatar_text = findViewById(R.id.avatar_text);
         login = findViewById(R.id.login);
+
         num_0 = findViewById(R.id.num_0);
         num_1 = findViewById(R.id.num_1);
         num_2 = findViewById(R.id.num_2);
@@ -98,31 +109,13 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
 
         backspace = findViewById(R.id.backspace);
 
-        user = getIntent().getParcelableExtra("Model_User");
         mAuth = FirebaseAuth.getInstance();
         userDataBase = FirebaseDatabase.getInstance().getReference(USER_KEY);
 
-        if (user.getFingerAuth().equals("yes")) {
-            biometricManager = androidx.biometric.BiometricManager.from(getApplicationContext());
-            switch (biometricManager.canAuthenticate()) {
-                case BiometricManager.BIOMETRIC_SUCCESS:
-                    backspace.setImageResource(R.drawable.ic_fingerprint);
-                    Log.d("FINGER_PRINT", "Приложение может аутентифицировать при помощи сканера отпечатка пальца");
-                    break;
-                case BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE:
-                    Log.e("FINGER_PRINT", "На устройстве отсутствует сканер отпечатка пальца");
-                    backspace.setImageResource(R.drawable.ic_backspace);
-                    break;
-                case BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE:
-                    Log.e("FINGER_PRINT", "Сканер отпечатка пальца сейчас недоступен");
-                    backspace.setImageResource(R.drawable.ic_backspace);
-                    break;
-                case BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED:
-                    backspace.setImageResource(R.drawable.ic_backspace);
-                    break;
-            }
-        }
-        invokeDialogFingerprint();
+        sharedPreferences = getSharedPreferences(Objects.requireNonNull(mAuth.getCurrentUser()).getUid(), MODE_PRIVATE);
+        editor = sharedPreferences.edit();
+
+        isHasFingerprint = sharedPreferences.getBoolean(Model_User.PREFERENCES_IS_HAS_FINGERPRINT, false);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.P)
@@ -142,9 +135,9 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
             if (pin_code.length() != 0) {
                 removeNumber();
             } else {
-                if (biometricManager.canAuthenticate() == BiometricManager.BIOMETRIC_SUCCESS && user.getFingerAuth().equals("yes")) {
+                /*if (biometricManager.canAuthenticate() == BiometricManager.BIOMETRIC_SUCCESS && user.getFingerAuth().equals("yes")) {
                     invokeDialogFingerprint();
-                }
+                }*/
 
             }
         });
@@ -306,11 +299,11 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
     @SuppressLint("UseCompatLoadingForDrawables")
     private void logicPin() {
         if (pin_code.length() == 0) {
-            if (user.getFingerAuth().equals("yes")) {
+            /*if (user.getFingerAuth().equals("yes")) {
                 backspace.setImageResource(R.drawable.ic_fingerprint);
             } else {
                 backspace.setImageResource(R.drawable.ic_backspace);
-            }
+            }*/
             setColorPin(listOfPin, 0);
         } else if (pin_code.length() == 1) {
             backspace.setImageResource(R.drawable.ic_backspace);
@@ -325,7 +318,7 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
             backspace.setImageResource(R.drawable.ic_backspace);
             setColorPin(listOfPin, 4);
 
-            if (user.getPin_code().equals(pin_code)) {
+           /* if (user.getPin_code().equals(pin_code)) {
                 Intent intent = new Intent(Activity_Pin_Code_Enter.this, Activity_General_Space_App.class);
                 startActivity(intent);
             } else {
@@ -336,7 +329,7 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
                     backspace.setImageResource(R.drawable.ic_backspace);
                 }
                 onShakeImage();
-            }
+            }*/
         }
     }
 
@@ -397,15 +390,15 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
     }
 
     private void openDialogExit() {
-        Dialog dialog = createDialog(R.layout.dialog_exit_pin_code);
+        Dialog dialog = createDialog();
 
         MaterialButton cancel = dialog.findViewById(R.id.btn_cancel);
         MaterialButton save = dialog.findViewById(R.id.btn_save);
 
         save.setOnClickListener(view -> {
             dialog.dismiss();
-            user.setPin_code("");
-            user.setFingerAuth("no");
+            /*user.setPin_code("");
+            user.setFingerAuth("no");*/
             userDataBase.child(mAuth.getCurrentUser().getUid()).setValue(user);
             Intent intent = new Intent(Activity_Pin_Code_Enter.this, Activity_SignIn.class);
             startActivity(intent);
@@ -417,9 +410,9 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")
-    private Dialog createDialog(int layout) {
+    private Dialog createDialog() {
         Dialog dialog = new Dialog(Activity_Pin_Code_Enter.this);
-        dialog.setContentView(layout);
+        dialog.setContentView(R.layout.dialog_exit_pin_code);
         dialog.getWindow().setBackgroundDrawable(getDrawable(R.drawable.fon_with_margin));
         dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         dialog.setCancelable(false);
@@ -427,34 +420,40 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
         return dialog;
     }
 
+    @SuppressLint("WrongConstant")
     private void invokeDialogFingerprint() {
-        Executor executor = ContextCompat.getMainExecutor(this);
+        if (biometricManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK)
+                == android.hardware.biometrics.BiometricManager.BIOMETRIC_SUCCESS) {
+            backspace.setImageResource(R.drawable.ic_fingerprint);
 
-        biometricPrompt = new BiometricPrompt(Activity_Pin_Code_Enter.this, executor, new BiometricPrompt.AuthenticationCallback() {
-            @Override
-            public void onAuthenticationError(int errorCode, CharSequence errString) {
-                super.onAuthenticationError(errorCode, errString);
-            }
+            Executor executor = ContextCompat.getMainExecutor(this);
 
-            @Override
-            public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result) {
-                super.onAuthenticationSucceeded(result);
-                Intent intent = new Intent(Activity_Pin_Code_Enter.this, Activity_General_Space_App.class);
-                startActivity(intent);
-            }
+            biometricPrompt = new BiometricPrompt(Activity_Pin_Code_Enter.this, executor, new BiometricPrompt.AuthenticationCallback() {
+                @Override
+                public void onAuthenticationError(int errorCode, CharSequence errString) {
+                    super.onAuthenticationError(errorCode, errString);
+                }
 
-            @Override
-            public void onAuthenticationFailed() {
-                super.onAuthenticationFailed();
-            }
-        });
+                @Override
+                public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result) {
+                    super.onAuthenticationSucceeded(result);
+                    Intent intent = new Intent(Activity_Pin_Code_Enter.this, Activity_General_Space_App.class);
+                    startActivity(intent);
+                }
 
-        BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
-                .setTitle(getResources().getString(R.string.enter_app))
-                .setNegativeButtonText(getResources().getString(R.string.cancel2))
-                .build();
+                @Override
+                public void onAuthenticationFailed() {
+                    super.onAuthenticationFailed();
+                }
+            });
 
-        biometricPrompt.authenticate(promptInfo);
+            BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
+                    .setTitle(getResources().getString(R.string.enter_app))
+                    .setNegativeButtonText(getResources().getString(R.string.cancel2))
+                    .build();
+
+            biometricPrompt.authenticate(promptInfo);
+        }
     }
 
     @Override

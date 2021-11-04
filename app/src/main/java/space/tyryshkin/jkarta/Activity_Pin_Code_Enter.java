@@ -1,5 +1,6 @@
 package space.tyryshkin.jkarta;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.biometric.BiometricManager;
@@ -12,10 +13,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 
 import androidx.biometric.BiometricPrompt;
+
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -25,11 +28,15 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -111,6 +118,7 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
         userDataBase = FirebaseDatabase.getInstance().getReference(USER_KEY);
+        biometricManager = androidx.biometric.BiometricManager.from(getApplicationContext());
 
         sharedPreferences = getSharedPreferences(Objects.requireNonNull(mAuth.getCurrentUser()).getUid(), MODE_PRIVATE);
         editor = sharedPreferences.edit();
@@ -118,7 +126,6 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
         isHasFingerprint = sharedPreferences.getBoolean(Model_User.PREFERENCES_IS_HAS_FINGERPRINT, false);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.P)
     @SuppressLint({"UseCompatLoadingForDrawables", "WrongConstant"})
     private void onClicks() {
         num_0.setOnClickListener(view -> addNumber("0"));
@@ -135,10 +142,10 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
             if (pin_code.length() != 0) {
                 removeNumber();
             } else {
-                /*if (biometricManager.canAuthenticate() == BiometricManager.BIOMETRIC_SUCCESS && user.getFingerAuth().equals("yes")) {
+                if (biometricManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK)
+                        == BiometricManager.BIOMETRIC_SUCCESS && isHasFingerprint) {
                     invokeDialogFingerprint();
-                }*/
-
+                }
             }
         });
         exit.setOnClickListener(view -> {
@@ -299,11 +306,11 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
     @SuppressLint("UseCompatLoadingForDrawables")
     private void logicPin() {
         if (pin_code.length() == 0) {
-            /*if (user.getFingerAuth().equals("yes")) {
+            if (isHasFingerprint) {
                 backspace.setImageResource(R.drawable.ic_fingerprint);
             } else {
                 backspace.setImageResource(R.drawable.ic_backspace);
-            }*/
+            }
             setColorPin(listOfPin, 0);
         } else if (pin_code.length() == 1) {
             backspace.setImageResource(R.drawable.ic_backspace);
@@ -318,18 +325,18 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
             backspace.setImageResource(R.drawable.ic_backspace);
             setColorPin(listOfPin, 4);
 
-           /* if (user.getPin_code().equals(pin_code)) {
+           if (sharedPreferences.getString(Model_User.PREFERENCES_PIN, "").equals(pin_code)) {
                 Intent intent = new Intent(Activity_Pin_Code_Enter.this, Activity_General_Space_App.class);
                 startActivity(intent);
             } else {
                 pin_code = "";
-                if (user.getFingerAuth().equals("yes")) {
+                if (isHasFingerprint) {
                     backspace.setImageResource(R.drawable.ic_fingerprint);
                 } else {
                     backspace.setImageResource(R.drawable.ic_backspace);
                 }
                 onShakeImage();
-            }*/
+            }
         }
     }
 
@@ -371,17 +378,34 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
     }
 
     private void setUserData() {
-        if (user.getLogin().equals("")) {
-            login.setText(user.getEmail());
-        } else {
-            login.setText(user.getLogin());
-        }
-        avatar_text.setText(Objects.requireNonNull(login.getText()).toString().substring(0, 1).toUpperCase());
-        if (user.getImage() != null && !user.getImage().equals("")) {
-            profile_simple_image.setVisibility(View.INVISIBLE);
-            avatar_text.setVisibility(View.INVISIBLE);
-            profile_image.setVisibility(View.VISIBLE);
-            Picasso.get().load(user.getImage()).into(profile_image);
+        if (mAuth.getCurrentUser() != null) {
+            userDataBase.child(mAuth.getCurrentUser().getUid()).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    try {
+                        String user_login = Objects.requireNonNull(snapshot.child("login").getValue()).toString();
+                        String user_image = Objects.requireNonNull(snapshot.child("image").getValue()).toString();
+
+                        login.setText(user_login);
+
+                        avatar_text.setText(Objects.requireNonNull(login.getText()).toString().substring(0, 1).toUpperCase());
+
+                        if (!TextUtils.isEmpty(user_image)) {
+                            profile_simple_image.setVisibility(View.INVISIBLE);
+                            avatar_text.setVisibility(View.INVISIBLE);
+                            profile_image.setVisibility(View.VISIBLE);
+                            Picasso.get().load(user_image).into(profile_image);
+                        }
+                    } catch (Exception e) {
+                        Intent intent = new Intent(Activity_Pin_Code_Enter.this, Activity_SignIn.class);
+                        startActivity(intent);
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                }
+            });
         }
     }
 
@@ -397,9 +421,11 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
 
         save.setOnClickListener(view -> {
             dialog.dismiss();
-            /*user.setPin_code("");
-            user.setFingerAuth("no");*/
-            userDataBase.child(mAuth.getCurrentUser().getUid()).setValue(user);
+
+            editor.putString(Model_User.PREFERENCES_PIN, "");
+            editor.putBoolean(Model_User.PREFERENCES_IS_HAS_FINGERPRINT, false);
+            editor.apply();
+
             Intent intent = new Intent(Activity_Pin_Code_Enter.this, Activity_SignIn.class);
             startActivity(intent);
         });
@@ -422,38 +448,35 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
 
     @SuppressLint("WrongConstant")
     private void invokeDialogFingerprint() {
-        if (biometricManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK)
-                == android.hardware.biometrics.BiometricManager.BIOMETRIC_SUCCESS) {
-            backspace.setImageResource(R.drawable.ic_fingerprint);
+        backspace.setImageResource(R.drawable.ic_fingerprint);
 
-            Executor executor = ContextCompat.getMainExecutor(this);
+        Executor executor = ContextCompat.getMainExecutor(this);
 
-            biometricPrompt = new BiometricPrompt(Activity_Pin_Code_Enter.this, executor, new BiometricPrompt.AuthenticationCallback() {
-                @Override
-                public void onAuthenticationError(int errorCode, CharSequence errString) {
-                    super.onAuthenticationError(errorCode, errString);
-                }
+        biometricPrompt = new BiometricPrompt(Activity_Pin_Code_Enter.this, executor, new BiometricPrompt.AuthenticationCallback() {
+            @Override
+            public void onAuthenticationError(int errorCode, CharSequence errString) {
+                super.onAuthenticationError(errorCode, errString);
+            }
 
-                @Override
-                public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result) {
-                    super.onAuthenticationSucceeded(result);
-                    Intent intent = new Intent(Activity_Pin_Code_Enter.this, Activity_General_Space_App.class);
-                    startActivity(intent);
-                }
+            @Override
+            public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result) {
+                super.onAuthenticationSucceeded(result);
+                Intent intent = new Intent(Activity_Pin_Code_Enter.this, Activity_General_Space_App.class);
+                startActivity(intent);
+            }
 
-                @Override
-                public void onAuthenticationFailed() {
-                    super.onAuthenticationFailed();
-                }
-            });
+            @Override
+            public void onAuthenticationFailed() {
+                super.onAuthenticationFailed();
+            }
+        });
 
-            BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
-                    .setTitle(getResources().getString(R.string.enter_app))
-                    .setNegativeButtonText(getResources().getString(R.string.cancel2))
-                    .build();
+        BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
+                .setTitle(getResources().getString(R.string.enter_app))
+                .setNegativeButtonText(getResources().getString(R.string.cancel2))
+                .build();
 
-            biometricPrompt.authenticate(promptInfo);
-        }
+        biometricPrompt.authenticate(promptInfo);
     }
 
     @Override

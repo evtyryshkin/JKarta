@@ -4,15 +4,12 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.Window;
-import android.widget.NumberPicker;
-import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -22,19 +19,20 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Objects;
 
 public class Activity_Start_Banner extends AppCompatActivity {
-
-    private Model_User user;
 
     private Window window;
 
     private FirebaseAuth mAuth;
+    private FirebaseUser currentUser;
     private DatabaseReference userDataBase;
     private String USER_KEY = "users";
 
-    private ArrayList<String> listOfUID = new ArrayList<>();
+    private SharedPreferences sharedPreferences;
+    private SharedPreferences.Editor editor;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,111 +41,57 @@ public class Activity_Start_Banner extends AppCompatActivity {
 
         init();
         setStatusBarColor();
+        checkExistsInDB();
     }
 
+    @SuppressLint("CommitPrefEdits")
     private void init() {
         window = Activity_Start_Banner.this.getWindow();
 
         mAuth = FirebaseAuth.getInstance();
+        currentUser = mAuth.getCurrentUser();
         userDataBase = FirebaseDatabase.getInstance().getReference(USER_KEY);
+
+        if (currentUser != null) {
+            sharedPreferences = getSharedPreferences((currentUser).getUid(), MODE_PRIVATE);
+            editor = sharedPreferences.edit();
+        }
     }
 
     private void setStatusBarColor() {
         window.setStatusBarColor(ContextCompat.getColor(Activity_Start_Banner.this, R.color.white));
     }
 
+    private void checkExistsInDB() {
+        if (currentUser != null) {
+            userDataBase.child(currentUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (!snapshot.exists()) {
+                        editor.putString(Model_User.PREFERENCES_PIN, "");
+                        editor.putBoolean(Model_User.PREFERENCES_IS_HAS_FINGERPRINT, false);
+                        editor.apply();
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+        }
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
-        FirebaseUser currentUser = mAuth.getCurrentUser();
 
         Intent intent;
-        if (currentUser != null) {
-            intent = new Intent(Activity_Start_Banner.this, Activity_SignIn.class);
+        if (currentUser != null && !sharedPreferences.getString(Model_User.PREFERENCES_PIN, "").equals("")) {
+            intent = new Intent(Activity_Start_Banner.this, Activity_Pin_Code_Enter.class);
         } else {
             intent = new Intent(Activity_Start_Banner.this, Activity_SignIn.class);
         }
         startActivity(intent);
-            /*userDataBase.child(currentUser.getUid()).addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    if (snapshot.exists()) {
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-
-                }
-            });*/
-
-
-
-                    /*.addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<DataSnapshot> task) {
-                    if (!task.isSuccessful()) {
-                        Intent intent = new Intent(Activity_Start_Banner.this, Activity_SignIn.class);
-                        startActivity(intent);
-                    } else {
-
-                    }
-                }
-            });
-        } else {
-            Intent intent = new Intent(Activity_Start_Banner.this, Activity_SignIn.class);
-            startActivity(intent);*/
-
-
-        /*if (currentUser != null) {
-            userDataBase.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    boolean indicator = false;
-                    for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
-                        user = dataSnapshot.getValue(Model_User.class);
-
-                        assert user != null;
-                        if (!user.getEmail().equals(mAuth.getCurrentUser().getEmail())) {
-                            user.setEmail(mAuth.getCurrentUser().getEmail());
-
-                            HashMap<String, Object> userMap = new HashMap<>();
-                            userMap.put("email", mAuth.getCurrentUser().getEmail());
-
-                            userDataBase.child(mAuth.getCurrentUser().getUid()).updateChildren(userMap);
-                        }
-
-                        assert user != null;
-                        if (user.getID().equals(mAuth.getCurrentUser().getUid()) && !user.getPin_code().equals("")) {
-                            indicator = true;
-                            Intent intent = new Intent(Activity_Start_Banner.this, Activity_Pin_Code_Enter.class);
-                            intent.putExtra("Model_User", user);
-                            startActivity(intent);
-                        }
-                    }
-
-                    //Это сделано для того, чтобы если вдруг какой-то user будет удален, то запускалась регистрация
-                    Handler handler = new Handler();
-                    boolean finalIndicator = indicator;
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (!finalIndicator) {
-                                Intent intent = new Intent(Activity_Start_Banner.this, Activity_SignIn.class);
-                                startActivity(intent);
-                            }
-                        }
-                    }, 3000);
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-
-                }
-            });
-        } else {
-            Intent intent = new Intent(Activity_Start_Banner.this, Activity_SignIn.class);
-            startActivity(intent);
-        }*/
     }
 }

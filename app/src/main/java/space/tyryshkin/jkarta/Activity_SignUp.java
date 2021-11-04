@@ -101,13 +101,17 @@ public class Activity_SignUp extends AppCompatActivity {
                             FirebaseUser firebaseUser = mAuth.getCurrentUser();
                             String userID = firebaseUser.getUid();
 
-                            Model_User newUser = new Model_User(userID, "", firebaseUser.getEmail(),
-                                    "", "", "", "");
+                            Model_User newUser = new Model_User(userID,
+                                    "",
+                                    firebaseUser.getEmail(), //email
+                                    Objects.requireNonNull(firebaseUser.getEmail()).substring(0, firebaseUser.getEmail().indexOf("@")), //login
+                                    "",
+                                    "",
+                                    "");
 
                             userDataBase.child(mAuth.getCurrentUser().getUid()).setValue(newUser);
 
                             Intent intent = new Intent(getApplicationContext(), Activity_Pin_Code_Create.class);
-                            //intent.putExtra("Model_User", newUser);
                             startActivity(intent);
 
                         } else {

@@ -9,9 +9,11 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.res.ColorStateList;
+import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Patterns;
 import android.view.Gravity;
@@ -87,8 +89,8 @@ public class Activity_Profile extends AppCompatActivity {
     private String CITY_KEY = "cities";
     private DatabaseReference citiesDataBase;
 
-    private ArrayList<String> listOfLogin = new ArrayList<>();
-    private ArrayList<String> listOfEmail = new ArrayList<>();
+    private final ArrayList<String> listOfLogin = new ArrayList<>();
+    private final ArrayList<String> listOfEmail = new ArrayList<>();
     Map<String, ArrayList<String>> mapCitiesInRegion = new HashMap<>();
     String region; //Так и не нашел способа локализовать переменную в методе
 
@@ -643,43 +645,75 @@ public class Activity_Profile extends AppCompatActivity {
     }
 
     private void loadProfileDataFromFirebase() {
-        ProgressDialog progressDialog = createProgressDialog();
+        if (mAuth.getCurrentUser() != null) {
+            ProgressDialog progressDialog = createProgressDialog();
 
-        userDataBase.child(mAuth.getCurrentUser().getUid()).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                user = snapshot.getValue(Model_User.class);
+            userDataBase.child(mAuth.getCurrentUser().getUid()).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.exists()) {
+                        String user_image = Objects.requireNonNull(snapshot.child("image").getValue()).toString();
+                        String user_email = Objects.requireNonNull(snapshot.child("email").getValue()).toString();
+                        String user_login = Objects.requireNonNull(snapshot.child("login").getValue()).toString();
+                        String user_city = Objects.requireNonNull(snapshot.child("city").getValue()).toString();
+                        String user_sex = Objects.requireNonNull(snapshot.child("sex").getValue()).toString();
+                        String user_birthday = Objects.requireNonNull(snapshot.child("birthday").getValue()).toString();
 
-                assert user != null;
-                if (user.getImage() != null && !user.getImage().equals("")) {
-                    profileSimpleImageView.setVisibility(View.INVISIBLE);
-                    avatar_text.setVisibility(View.INVISIBLE);
-                    btn_remove_image.setVisibility(View.VISIBLE);
-                    profileImageView.setVisibility(View.VISIBLE);
-                    Picasso.get().load(user.getImage()).into(profileImageView);
+                        if (!TextUtils.isEmpty(user_image)) {
+                            profileSimpleImageView.setVisibility(View.INVISIBLE);
+                            avatar_text.setVisibility(View.INVISIBLE);
+                            btn_remove_image.setVisibility(View.VISIBLE);
+                            profileImageView.setVisibility(View.VISIBLE);
+                            Picasso.get().load(user_image).into(profileImageView);
+                        }
+
+                        email.setText(user_email);
+                        login.setText(user_login);
+                        avatar_text.setText(Objects.requireNonNull(user_login.substring(0, 1).toUpperCase()));
+                        city.setText(user_city);
+                        sex.setText(user_sex);
+                        birthday.setText(user_birthday);
+
+                        progressDialog.dismiss();
+                    } else {
+                        invokeToastError();
+                    }
+
+                    /*user = snapshot.getValue(Model_User.class);
+
+                    assert user != null;
+                    if (user.getImage() != null && !user.getImage().equals("")) {
+                        profileSimpleImageView.setVisibility(View.INVISIBLE);
+                        avatar_text.setVisibility(View.INVISIBLE);
+                        btn_remove_image.setVisibility(View.VISIBLE);
+                        profileImageView.setVisibility(View.VISIBLE);
+                        Picasso.get().load(user.getImage()).into(profileImageView);
+                    }
+
+                    email.setText(mAuth.getCurrentUser().getEmail());
+                    assert user != null;
+                    if (user.getLogin().equals("")) {
+                        login.setText(user.getEmail().substring(0, user.getEmail().indexOf("@")));
+                    } else {
+                        login.setText(user.getLogin());
+                    }
+
+                    avatar_text.setText(Objects.requireNonNull(login.getText()).toString().substring(0, 1).toUpperCase());
+                    city.setText(user.getCity());
+                    sex.setText(user.getSex());
+                    birthday.setText(user.getBirthday());
+
+                    progressDialog.dismiss();*/
                 }
 
-                email.setText(mAuth.getCurrentUser().getEmail());
-                assert user != null;
-                if (user.getLogin().equals("")) {
-                    login.setText(user.getEmail().substring(0, user.getEmail().indexOf("@")));
-                } else {
-                    login.setText(user.getLogin());
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
                 }
-
-                avatar_text.setText(Objects.requireNonNull(login.getText()).toString().substring(0, 1).toUpperCase());
-                city.setText(user.getCity());
-                sex.setText(user.getSex());
-                birthday.setText(user.getBirthday());
-
-                progressDialog.dismiss();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
+            });
+        } else {
+            invokeToastError();
+        }
     }
 
     private void removeImage() {
@@ -799,6 +833,15 @@ public class Activity_Profile extends AppCompatActivity {
         }
         return false;
     }
+    private void invokeToastError() {
+        Toast toast = Toast.makeText(Activity_Profile.this, getResources().getString(R.string.failure2), Toast.LENGTH_LONG);
+        View view = toast.getView();
+        view.getBackground().setColorFilter(getColor(R.color.white), PorterDuff.Mode.SRC_IN);
+        TextView text = view.findViewById(android.R.id.message);
+        text.setTextColor(getColor(R.color.error));
+        text.setGravity(Gravity.CENTER);
+        toast.show();
+    }
 
     @Override
     public void onBackPressed() {
@@ -810,4 +853,5 @@ public class Activity_Profile extends AppCompatActivity {
             startActivity(intent);
         }
     }
+
 }

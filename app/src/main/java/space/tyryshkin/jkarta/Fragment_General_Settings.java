@@ -49,15 +49,16 @@ public class Fragment_General_Settings extends Fragment {
     private void onClicks() {
         profileStroke.setOnClickListener((view) -> {
             Intent intent = new Intent(getActivity(), Activity_Profile.class);
+            intent.putExtra("FROM_ACTIVITY", "Activity_General_Space_App");
             startActivity(intent);
         });
         authStroke.setOnClickListener((view) -> {
             Toast.makeText(getActivity(), "Вход и авторизация", Toast.LENGTH_SHORT).show();
         });
-        authStroke.setOnClickListener((view) -> {
+        notificationStroke.setOnClickListener((view) -> {
             Toast.makeText(getActivity(), "Уведомления", Toast.LENGTH_SHORT).show();
         });
-        authStroke.setOnClickListener((view) -> {
+        applicationStroke.setOnClickListener((view) -> {
             Toast.makeText(getActivity(), "Приложение", Toast.LENGTH_SHORT).show();
         });
     }
@@ -79,10 +80,10 @@ public class Fragment_General_Settings extends Fragment {
         authStroke.setOnTouchListener((view, motionEvent) -> {
             if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
                 authStroke.setBackgroundDrawable(getResources().getDrawable(R.drawable.fon_grey));
-                return true;
+                return false;
             } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
                 authStroke.setBackgroundDrawable(getResources().getDrawable(R.drawable.fon_white));
-                return true;
+                return false;
             }
             return false;
         });
@@ -90,10 +91,10 @@ public class Fragment_General_Settings extends Fragment {
         notificationStroke.setOnTouchListener((view, motionEvent) -> {
             if(motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
                 notificationStroke.setBackground(getResources().getDrawable(R.drawable.fon_grey));
-                return true;
+                return false;
             } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
                 notificationStroke.setBackground(getResources().getDrawable(R.drawable.fon_white));
-                return true;
+                return false;
             }
             return false;
         });
@@ -101,10 +102,10 @@ public class Fragment_General_Settings extends Fragment {
         applicationStroke.setOnTouchListener((view, motionEvent) -> {
             if(motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
                 applicationStroke.setBackground(getResources().getDrawable(R.drawable.fon_grey));
-                return true;
+                return false;
             } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
                 applicationStroke.setBackground(getResources().getDrawable(R.drawable.fon_white));
-                return true;
+                return false;
             }
             return false;
         });

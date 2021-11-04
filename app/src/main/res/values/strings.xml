@@ -16,14 +16,17 @@
     <string name="cancel2">Отмена</string>
     <string name="save">Сохранить</string>
     <string name="next">Далее</string>
+    <string name="change_email">Изменить Email</string>
+    <string name="enter_email">Введите новый Email</string>
+    <string name="enter_password">Введите текущий пароль</string>
     <string name="change_login">Изменить логин</string>
-    <string name="enter_login">Введи логин</string>
-    <string name="change_region">Выбери регион</string>
-    <string name="change_city">Выбери город</string>
-    <string name="change_sex">Выбери пол</string>
+    <string name="enter_login">Введите логин</string>
+    <string name="change_region">Выберите регион</string>
+    <string name="change_city">Выберите город</string>
+    <string name="change_sex">Выберите пол</string>
     <string name="man">Мужской</string>
     <string name="woman">Женский</string>
-    <string name="change_birthday">Выбери дату рождения</string>
+    <string name="change_birthday">Выберите дату рождения</string>
     <string name="crop_image_menu_rotate_left">Повернуть налево</string>
     <string name="crop_image_menu_rotate_right">Повернуть направо</string>
     <string name="crop_image_menu_flip_horizontally">Отразить по горизонтали</string>
@@ -54,7 +57,8 @@
     <string name="add_finger_print">Добавление отпечатка пальца</string>
     <string name="reset_password">Восстановление пароля</string>
     <string name="reset_password_toast">На почту направлено письмо для восстановления пароля</string>
-    <string name="failure">Ошибка! Попробуйте повторить попытку</string>
+    <string name="failure1">Ошибка! Попробуйте повторить попытку</string>
+    <string name="failure2">Ошибка! Проверьте интернет соединение</string>
     <string name="home">Главная</string>
     <string name="cards">Все карты</string>
     <string name="settings">Настройки</string>
@@ -62,9 +66,12 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="settings_profile">Настройки профиля</string>
     <string name="authorisation">Вход и авторизация</string>
-    <string name="settings_authorisation">Настройки входа по отпечатку и коду доступа</string>
+    <string name="settings_authorisation">Настройки пароля, входа по отпечатку и коду доступа</string>
     <string name="notification">Уведомления</string>
     <string name="settings_notification">Настройки push-уведомлений</string>
     <string name="application">Приложение</string>
     <string name="settings_application">Настройки приложения</string>
+    <string name="attention_auth">Необходимо авторизоваться</string>
+    <string name="attention_auth_text">Для подтверждения электронной почты вам будет направлено сообщение на указанный Email</string>
+    <string name="send_again">Отправить</string>
 </resources>

@@ -2,20 +2,16 @@ package space.tyryshkin.jkarta;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.content.res.AppCompatResources;
-import androidx.core.graphics.drawable.DrawableCompat;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Patterns;
 import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -54,8 +50,6 @@ public class Activity_SignIn extends AppCompatActivity {
     private DatabaseReference userDataBase;
     private String USER_KEY = "users";
 
-    public Activity_SignIn instance;
-
     private ArrayList<String> listOfEmail = new ArrayList<>();
 
     @Override
@@ -68,8 +62,6 @@ public class Activity_SignIn extends AppCompatActivity {
     }
 
     public void init() {
-        instance = this;
-
         email_layout = findViewById(R.id.email_layout);
         password_layout = findViewById(R.id.password_layout);
         email_edit = findViewById(R.id.email_edit);
@@ -81,18 +73,14 @@ public class Activity_SignIn extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         userDataBase = FirebaseDatabase.getInstance().getReference(USER_KEY);
 
-        listOfEmail = findAllEmail();
+        findAllEmail();
     }
 
     private void onClicks() {
         btn_sign_in.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                boolean validateEmail = checkValidateEmail();
-                boolean validatePassword = checkValidatePassword();
-
-                if (validateEmail && validatePassword) {
+                if (checkValidateEmail() && checkValidatePassword()) {
                     mAuth.signInWithEmailAndPassword(email_edit.getText().toString(), password_edit.getText().toString())
                             .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                                 @Override
@@ -156,7 +144,7 @@ public class Activity_SignIn extends AppCompatActivity {
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Toast toast = Toast.makeText(Activity_SignIn.this, getResources().getString(R.string.failure), Toast.LENGTH_LONG);
+                        Toast toast = Toast.makeText(Activity_SignIn.this, getResources().getString(R.string.failure2), Toast.LENGTH_LONG);
                         toast.setGravity(Gravity.TOP, 0, 400);
                         View view = toast.getView();
                         view.getBackground().setColorFilter(getColor(R.color.white), PorterDuff.Mode.SRC_IN);
@@ -182,9 +170,7 @@ public class Activity_SignIn extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                if (checkValidateEmail2(email_layout, email_edit, next)) {
-                    next.setEnabled(true);
-                }
+                checkValidateEmail2(email_layout, email_edit, next);
             }
 
             @Override
@@ -258,10 +244,11 @@ public class Activity_SignIn extends AppCompatActivity {
         window.setAttributes(windowParams);
     }
 
-    private ArrayList<String> findAllEmail() {
+    private void findAllEmail() {
         userDataBase.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                listOfEmail.clear();
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     String email = String.valueOf(ds.child("email").getValue());
                     listOfEmail.add(email);
@@ -272,7 +259,6 @@ public class Activity_SignIn extends AppCompatActivity {
 
             }
         });
-        return listOfEmail;
     }
 
     private boolean containsIgnoreCase(ArrayList<String> list, String string) {
@@ -290,9 +276,9 @@ public class Activity_SignIn extends AppCompatActivity {
     }
 
     public void hideKeyBoard() {
-        View keyBoard = instance.getCurrentFocus();
+        View keyBoard = this.getCurrentFocus();
         if (keyBoard != null) {
-            InputMethodManager inputMethodManager = (InputMethodManager) instance.getSystemService(INPUT_METHOD_SERVICE);
+            InputMethodManager inputMethodManager = (InputMethodManager) this.getSystemService(INPUT_METHOD_SERVICE);
             assert inputMethodManager != null;
             inputMethodManager.hideSoftInputFromWindow(keyBoard.getWindowToken(), 0);
         }

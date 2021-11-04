@@ -13,12 +13,10 @@ import androidx.fragment.app.FragmentTransaction;
 
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.android.material.navigation.NavigationView;
@@ -28,8 +26,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
 
 import java.util.Objects;
@@ -37,6 +33,8 @@ import java.util.Objects;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class Activity_General_Space_App extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+
+    private String SPECIFIC_FRAGMENT = "Fragment_General_Home";
 
     private Window window;
 
@@ -69,6 +67,10 @@ public class Activity_General_Space_App extends AppCompatActivity implements Nav
     }
 
     private void init() {
+        if (getIntent().getStringExtra("SPECIFIC_FRAGMENT") != null) {
+            SPECIFIC_FRAGMENT = getIntent().getStringExtra("SPECIFIC_FRAGMENT");
+        }
+
         window = Activity_General_Space_App.this.getWindow();
 
         toolbar = findViewById(R.id.toolbar);
@@ -93,8 +95,14 @@ public class Activity_General_Space_App extends AppCompatActivity implements Nav
         toggle = new ActionBarDrawerToggle(this, drawer, toolbar,
                 R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
-        changeFragment(new Fragment_General_Home(), true);
-        navigationView.setCheckedItem(R.id.nav_home);
+
+        if (SPECIFIC_FRAGMENT.equals("Fragment_General_Settings")) {
+            changeFragment(new Fragment_General_Settings(), true);
+            navigationView.setCheckedItem(R.id.nav_settings);
+        } else {
+            changeFragment(new Fragment_General_Home(), true);
+            navigationView.setCheckedItem(R.id.nav_home);
+        }
     }
 
     @SuppressLint("NonConstantResourceId")
@@ -107,7 +115,7 @@ public class Activity_General_Space_App extends AppCompatActivity implements Nav
             case R.id.nav_cards:
                 changeFragment(new Fragment_General_Cards(), true);
                 break;
-            case R.id.nav_mcc:
+            case R.id.nav_settings:
                 changeFragment(new Fragment_General_Settings(), true);
                 break;
         }
@@ -141,7 +149,7 @@ public class Activity_General_Space_App extends AppCompatActivity implements Nav
             } else if (fragment instanceof Fragment_General_Cards) {
                 navigationView.setCheckedItem(R.id.nav_cards);
             } else if (fragment instanceof Fragment_General_Settings) {
-                navigationView.setCheckedItem(R.id.nav_mcc);
+                navigationView.setCheckedItem(R.id.nav_settings);
             }
         } else {
             finishAndRemoveTask();

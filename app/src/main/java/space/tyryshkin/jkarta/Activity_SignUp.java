@@ -5,17 +5,21 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Patterns;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -39,11 +43,8 @@ public class Activity_SignUp extends AppCompatActivity {
     private ImageView btn_back;
 
     private FirebaseAuth mAuth;
-
-    DatabaseReference userDataBase;
+    private DatabaseReference userDataBase;
     private String USER_KEY = "users";
-
-    public Activity_SignUp instance;
 
     private ArrayList<String> listOfEmail = new ArrayList<>();
 
@@ -59,7 +60,6 @@ public class Activity_SignUp extends AppCompatActivity {
     }
 
     public void init() {
-        instance = this;
         btn_back = findViewById(R.id.btn_back);
         email_layout = findViewById(R.id.email_layout);
         password_layout = findViewById(R.id.password_layout);
@@ -110,8 +110,16 @@ public class Activity_SignUp extends AppCompatActivity {
                             intent.putExtra("Model_User", newUser);
                             startActivity(intent);
 
+                        } else {
+                            Toast toast = Toast.makeText(Activity_SignUp.this, getResources().getString(R.string.failure2), Toast.LENGTH_LONG);
+                            toast.setGravity(Gravity.TOP, 0, 400);
+                            View view = toast.getView();
+                            view.getBackground().setColorFilter(getColor(R.color.white), PorterDuff.Mode.SRC_IN);
+                            TextView text = view.findViewById(android.R.id.message);
+                            text.setTextColor(getColor(R.color.error));
+                            text.setGravity(Gravity.CENTER);
+                            toast.show();
                         }
-
                     }
                 });
             }
@@ -209,12 +217,12 @@ public class Activity_SignUp extends AppCompatActivity {
         userDataBase.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                listOfEmail.clear();
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                     String email = String.valueOf(dataSnapshot.child("email").getValue());
                     listOfEmail.add(email);
                 }
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
 
@@ -223,9 +231,9 @@ public class Activity_SignUp extends AppCompatActivity {
     }
 
     public void hideKeyBoard() {
-        View keyBoard = instance.getCurrentFocus();
+        View keyBoard = this.getCurrentFocus();
         if (keyBoard != null) {
-            InputMethodManager inputMethodManager = (InputMethodManager) instance.getSystemService(INPUT_METHOD_SERVICE);
+            InputMethodManager inputMethodManager = (InputMethodManager) this.getSystemService(INPUT_METHOD_SERVICE);
             assert inputMethodManager != null;
             inputMethodManager.hideSoftInputFromWindow(keyBoard.getWindowToken(), 0);
         }

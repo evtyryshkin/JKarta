@@ -22,7 +22,7 @@
                 android:layout_height="30dp"
                 android:background="@color/primary_500"
                 android:layout_centerVertical="true"
-                android:layout_marginStart="6dp"
+                android:layout_marginStart="16dp"
                 android:src="@drawable/ic_arrow_back" />
 
             <TextView
@@ -30,7 +30,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="16dp"
-                android:layout_toEndOf="@+id/btn_back"
+                android:layout_centerHorizontal="true"
                 android:text="@string/registration"
                 android:textColor="@color/white"
                 android:textSize="20sp" />

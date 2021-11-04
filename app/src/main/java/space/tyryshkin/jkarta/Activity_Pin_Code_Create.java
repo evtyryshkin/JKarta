@@ -77,7 +77,9 @@ public class Activity_Pin_Code_Create extends AppCompatActivity {
         window = Activity_Pin_Code_Create.this.getWindow();
 
         skip = findViewById(R.id.skip);
+
         set_access_code = findViewById(R.id.set_access_code);
+
         num_0 = findViewById(R.id.num_0);
         num_1 = findViewById(R.id.num_1);
         num_2 = findViewById(R.id.num_2);
@@ -131,6 +133,7 @@ public class Activity_Pin_Code_Create extends AppCompatActivity {
     private void onClicks() {
         skip.setOnClickListener(view -> {
             Intent intent = new Intent(Activity_Pin_Code_Create.this, Activity_Profile.class);
+            intent.putExtra("FROM_ACTIVITY", "Activity_Pin_Code_Create");
             startActivity(intent);
         });
         num_0.setOnClickListener(view -> {
@@ -357,11 +360,13 @@ public class Activity_Pin_Code_Create extends AppCompatActivity {
                         no.setOnClickListener(view -> {
                             dialog.dismiss();
                             Intent intent = new Intent(Activity_Pin_Code_Create.this, Activity_Profile.class);
+                            intent.putExtra("FROM_ACTIVITY", "Activity_Pin_Code_Create");
                             startActivity(intent);
                         });
                         dialog.show();
                     } else {
                         Intent intent = new Intent(Activity_Pin_Code_Create.this, Activity_Profile.class);
+                        intent.putExtra("FROM_ACTIVITY", "Activity_Pin_Code_Create");
                         startActivity(intent);
                     }
 
@@ -463,6 +468,7 @@ public class Activity_Pin_Code_Create extends AppCompatActivity {
                 user.setFingerAuth("yes");
                 userDataBase.child(mAuth.getCurrentUser().getUid()).setValue(user);
                 Intent intent = new Intent(Activity_Pin_Code_Create.this, Activity_Profile.class);
+                intent.putExtra("FROM_ACTIVITY", "Activity_Pin_Code_Create");
                 startActivity(intent);
             }
 

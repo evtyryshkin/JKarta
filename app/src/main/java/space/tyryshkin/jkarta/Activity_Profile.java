@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Patterns;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -21,6 +22,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -29,11 +31,19 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCanceledListener;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -56,13 +66,17 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class Activity_Profile extends AppCompatActivity {
 
+    private String FROM_ACTIVITY = "";
+
     private Model_User user;
 
-    private TextView avatar_text, login, city, sex, birthday;
-    private RelativeLayout loginStroke, cityStroke, sexStroke, birthdayStroke;
+    private TextView avatar_text, email, login, city, sex, birthday;
+    private RelativeLayout emailStroke, loginStroke, cityStroke, sexStroke, birthdayStroke;
     private CircleImageView profileSimpleImageView, profileImageView;
     private Button btn_ready;
-    private ImageButton btn_remove_image;
+
+    private RelativeLayout error_layout;
+    private ImageButton btn_remove_image, btn_back, btn_exit, error_email_auth, error_phone_auth;
 
     private FirebaseAuth mAuth;
     private DatabaseReference userDataBase;
@@ -74,6 +88,7 @@ public class Activity_Profile extends AppCompatActivity {
     private DatabaseReference citiesDataBase;
 
     private ArrayList<String> listOfLogin = new ArrayList<>();
+    private ArrayList<String> listOfEmail = new ArrayList<>();
     Map<String, ArrayList<String>> mapCitiesInRegion = new HashMap<>();
     String region; //Так и не нашел способа локализовать переменную в методе
 
@@ -91,13 +106,30 @@ public class Activity_Profile extends AppCompatActivity {
 
     @SuppressLint("CutPasteId")
     public void init() {
+        FROM_ACTIVITY = getIntent().getStringExtra("FROM_ACTIVITY");
+        btn_back = findViewById(R.id.btn_back);
+        btn_exit = findViewById(R.id.btn_exit);
+        if (FROM_ACTIVITY.equals("Activity_Pin_Code_Create")) {
+            btn_back.setVisibility(View.INVISIBLE);
+            btn_exit.setVisibility(View.INVISIBLE);
+        } else if (FROM_ACTIVITY.equals("Activity_General_Space_App")) {
+            btn_back.setVisibility(View.VISIBLE);
+            btn_exit.setVisibility(View.VISIBLE);
+        }
+
+        error_layout = findViewById(R.id.error_layout);
+        error_email_auth = findViewById(R.id.error_email_auth);
+        error_phone_auth = findViewById(R.id.error_phone_auth);
+
         profileSimpleImageView = findViewById(R.id.profile_simple_image);
         profileImageView = findViewById(R.id.profile_image);
         avatar_text = findViewById(R.id.avatar_text);
+        email = findViewById(R.id.email);
         login = findViewById(R.id.login);
         city = findViewById(R.id.city);
         sex = findViewById(R.id.sex);
         birthday = findViewById(R.id.birthday);
+        emailStroke = findViewById(R.id.emailStroke);
         loginStroke = findViewById(R.id.loginStroke);
         cityStroke = findViewById(R.id.cityStroke);
         sexStroke = findViewById(R.id.sexStroke);
@@ -114,16 +146,52 @@ public class Activity_Profile extends AppCompatActivity {
         searchCitiesFromFirebase(null, null, null);
 
         loadProfileDataFromFirebase();
-        listOfLogin = findAllLogin();
+        findAllEmailAndLogin();
+
+        visibleAuthError();
+        isVerified();
+    }
+    private void visibleAuthError() {
+        if (mAuth.getCurrentUser().isEmailVerified() && mAuth.getCurrentUser().getEmail().equals(user.getEmail())) {
+            error_email_auth.setVisibility(View.INVISIBLE);
+        }
+        error_layout.removeView(error_phone_auth);
+    }
+
+    private void isVerified() {
+        if (mAuth.getCurrentUser().isEmailVerified()) {
+            HashMap<String, Object> userMap = new HashMap<>();
+            userMap.put("email", mAuth.getCurrentUser().getEmail());
+
+            userDataBase.child(mAuth.getCurrentUser().getUid()).updateChildren(userMap);
+            findAllEmailAndLogin();
+            visibleAuthError();
+        }
     }
 
     private void onClicks() {
+        btn_back.setOnClickListener(view -> {
+            onBackPressed();
+        });
+        btn_exit.setOnClickListener(view -> {
+            Intent intent = new Intent(Activity_Profile.this, Activity_SignIn.class);
+            startActivity(intent);
+        });
+        error_email_auth.setOnClickListener(view -> {
+            openDialogError();
+        });
+        error_phone_auth.setOnClickListener(view -> {
+
+        });
+
         profileSimpleImageView.setOnClickListener(view -> {
             CropImage.activity().setAspectRatio(1, 1).start(this);
         });
         profileImageView.setOnClickListener(view -> {
             CropImage.activity().setAspectRatio(1, 1).start(this);
         });
+
+        emailStroke.setOnClickListener(view -> openDialogEmail());
 
         loginStroke.setOnClickListener(view -> openDialogLogin());
 
@@ -146,6 +214,42 @@ public class Activity_Profile extends AppCompatActivity {
     @SuppressLint("UseCompatLoadingForDrawables")
     private void onTouches() {
         //noinspection AndroidLintClickableViewAccessibility
+        btn_back.setOnTouchListener((view, motionEvent) -> {
+            if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                btn_back.setBackgroundDrawable(getResources().getDrawable(R.drawable.fon_primary_200));
+            } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                btn_back.setBackgroundColor(getColor(R.color.primary_500));
+            }
+            return false;
+        });
+        //noinspection AndroidLintClickableViewAccessibility
+        btn_exit.setOnTouchListener((view, motionEvent) -> {
+            if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                btn_exit.setBackgroundDrawable(getResources().getDrawable(R.drawable.fon_primary_200));
+            } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                btn_exit.setBackgroundColor(getColor(R.color.primary_500));
+            }
+            return false;
+        });
+        //noinspection AndroidLintClickableViewAccessibility
+        error_email_auth.setOnTouchListener((view, motionEvent) -> {
+            if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                error_email_auth.setBackgroundDrawable(getResources().getDrawable(R.drawable.fon_error_touched));
+            } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                error_email_auth.setBackgroundDrawable(getResources().getDrawable(R.drawable.fon_error));
+            }
+            return false;
+        });
+        //noinspection AndroidLintClickableViewAccessibility
+        error_phone_auth.setOnTouchListener((view, motionEvent) -> {
+            if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                error_phone_auth.setBackgroundDrawable(getResources().getDrawable(R.drawable.fon_error_touched));
+            } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                error_phone_auth.setBackgroundDrawable(getResources().getDrawable(R.drawable.fon_error));
+            }
+            return false;
+        });
+        //noinspection AndroidLintClickableViewAccessibility
         btn_remove_image.setOnTouchListener((view, motionEvent) -> {
             if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
                 btn_remove_image.setBackgroundDrawable(getResources().getDrawable(R.drawable.fon_grey));
@@ -155,6 +259,15 @@ public class Activity_Profile extends AppCompatActivity {
             return false;
         });
 
+        //noinspection AndroidLintClickableViewAccessibility
+        emailStroke.setOnTouchListener((view, motionEvent) -> {
+            if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                emailStroke.setBackgroundDrawable(getResources().getDrawable(R.drawable.fon_grey));
+            } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                emailStroke.setBackgroundColor(getColor(R.color.white));
+            }
+            return false;
+        });
         //noinspection AndroidLintClickableViewAccessibility
         loginStroke.setOnTouchListener((view, motionEvent) -> {
             if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
@@ -237,13 +350,81 @@ public class Activity_Profile extends AppCompatActivity {
 
         save.setOnClickListener(view -> {
             dialog.dismiss();
-            avatar_text.setText(Objects.requireNonNull(edit.getText()).toString().substring(0, 1).toUpperCase());
             login.setText(Objects.requireNonNull(edit.getText()).toString());
         });
 
         cancel.setOnClickListener(view -> dialog.dismiss());
 
         dialog.show();
+    }
+
+    private void openDialogEmail() {
+        Dialog dialog = createDialog(R.layout.dialog_change_email);
+
+        placeDialogBottom(dialog);
+
+        TextInputLayout email_layout = dialog.findViewById(R.id.email_layout);
+        TextInputEditText email_edit = dialog.findViewById(R.id.email_edit);
+        MaterialButton cancel = dialog.findViewById(R.id.btn_cancel);
+        MaterialButton next = dialog.findViewById(R.id.btn_next);
+
+        email_edit.setText(email.getText());
+
+        email_edit.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                checkValidateEmail2(email_layout, email_edit, next);
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+            }
+        });
+
+        next.setOnClickListener(view -> {
+            FirebaseUser firebaseUser = mAuth.getCurrentUser();
+
+            firebaseUser.updateEmail(email_edit.getText().toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if (task.isSuccessful()) {
+                        dialog.dismiss();
+                        email.setText(Objects.requireNonNull(email_edit.getText()).toString());
+
+                        visibleAuthError();
+                    }
+                }
+            });
+        });
+
+
+        cancel.setOnClickListener(view -> dialog.dismiss());
+
+        dialog.show();
+    }
+
+    private void checkValidateEmail2(TextInputLayout email_layout, EditText edit, MaterialButton next) {
+        if (Objects.requireNonNull(edit.getText()).toString().equals("")) {
+            email_layout.setError("Поле обязательно для заполнения");
+            next.setEnabled(false);
+        } else if (!isEmailValid(edit.getText().toString())) {
+            email_layout.setError("Пример: mail@example.com");
+            next.setEnabled(false);
+        } else if (containsIgnoreCase(listOfEmail, edit.getText().toString())) {
+            email_layout.setError("Email уже существует");
+            next.setEnabled(false);
+        } else {
+            email_layout.setError(null);
+            next.setEnabled(true);
+        }
+    }
+
+    private boolean isEmailValid(CharSequence email) {
+        return Patterns.EMAIL_ADDRESS.matcher(email).matches();
     }
 
     private void openDialogsRegionAndCities(int layoutResourceFile, Dialog previousDialog) {
@@ -477,12 +658,15 @@ public class Activity_Profile extends AppCompatActivity {
                     profileImageView.setVisibility(View.VISIBLE);
                     Picasso.get().load(user.getImage()).into(profileImageView);
                 }
+
+                email.setText(mAuth.getCurrentUser().getEmail());
                 assert user != null;
                 if (user.getLogin().equals("")) {
-                    login.setText(user.getEmail());
+                    login.setText(user.getEmail().substring(0, user.getEmail().indexOf("@")));
                 } else {
                     login.setText(user.getLogin());
                 }
+
                 avatar_text.setText(Objects.requireNonNull(login.getText()).toString().substring(0, 1).toUpperCase());
                 city.setText(user.getCity());
                 sex.setText(user.getSex());
@@ -509,6 +693,7 @@ public class Activity_Profile extends AppCompatActivity {
     private void saveProfileDataToFirebase() {
         ProgressDialog progressDialog = createProgressDialog();
 
+        user.setEmail(email.getText().toString());
         user.setLogin(login.getText().toString());
         user.setCity(city.getText().toString());
         user.setSex(sex.getText().toString());
@@ -562,21 +747,48 @@ public class Activity_Profile extends AppCompatActivity {
         }
     }
 
-    private ArrayList<String> findAllLogin() {
+    private void findAllEmailAndLogin() {
+        listOfLogin.clear();
+        listOfEmail.clear();
         userDataBase.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     String login = String.valueOf(ds.child("login").getValue());
+                    String email = String.valueOf(ds.child("email").getValue());
                     listOfLogin.add(login);
+                    listOfEmail.add(email);
                 }
             }
+
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
 
             }
         });
-        return listOfLogin;
+    }
+
+
+    private void openDialogError() {
+        Dialog dialog = createDialog(R.layout.dialog_auth_send_email);
+
+        placeDialogBottom(dialog);
+
+        MaterialButton cancel = dialog.findViewById(R.id.btn_cancel);
+        MaterialButton send = dialog.findViewById(R.id.btn_send);
+
+        send.setOnClickListener(view -> {
+            dialog.dismiss();
+            Objects.requireNonNull(mAuth.getCurrentUser()).sendEmailVerification().addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                }
+            });
+        });
+
+        cancel.setOnClickListener(view -> dialog.dismiss());
+
+        dialog.show();
     }
 
     private boolean containsIgnoreCase(ArrayList<String> list, String string) {
@@ -590,6 +802,12 @@ public class Activity_Profile extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-//Должно быть пустым!!!
+        if (FROM_ACTIVITY.equals("Activity_Pin_Code_Create")) {
+
+        } else if (FROM_ACTIVITY.equals("Activity_General_Space_App")) {
+            Intent intent = new Intent(Activity_Profile.this, Activity_General_Space_App.class);
+            intent.putExtra("SPECIFIC_FRAGMENT", "Fragment_General_Settings");
+            startActivity(intent);
+        }
     }
 }

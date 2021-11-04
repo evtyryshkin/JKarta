@@ -66,7 +66,6 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
         setUserData();
         onClicks();
         onTouches();
-
     }
 
     @SuppressLint("SwitchIntDef")

@@ -254,6 +254,13 @@ public class Activity_Security extends AppCompatActivity {
 
         no.setOnClickListener(view -> {
             dialog.dismiss();
+
+            if (sharedPreferences.getString("PREFERENCES_PIN", "").equals("")) {
+                createCustomToast(getResources().getString(R.string.cancel_access_code), getColor(R.color.error));
+            } else {
+                createCustomToast(getResources().getString(R.string.remove_access_code), getColor(R.color.error));
+            }
+
             editor.putString(Model_User.PREFERENCES_PIN, "");
             editor.apply();
         });
@@ -277,6 +284,11 @@ public class Activity_Security extends AppCompatActivity {
 
             no.setOnClickListener(view -> {
                 dialog.dismiss();
+                if (sharedPreferences.getBoolean("PREFERENCES_IS_HAS_FINGERPRINT", false)) {
+                    createCustomToast(getResources().getString(R.string.cancel_finger_print), getColor(R.color.error));
+                } else {
+                    createCustomToast(getResources().getString(R.string.remove_finger_print), getColor(R.color.error));
+                }
                 editor.putBoolean(Model_User.PREFERENCES_IS_HAS_FINGERPRINT, false);
                 editor.apply();
             });
@@ -299,7 +311,7 @@ public class Activity_Security extends AppCompatActivity {
             @Override
             public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result) {
                 super.onAuthenticationSucceeded(result);
-
+                createCustomToast(getResources().getString(R.string.success), getColor(R.color.teal_500));
                 editor.putBoolean(Model_User.PREFERENCES_IS_HAS_FINGERPRINT, true);
                 editor.apply();
             }
@@ -338,6 +350,17 @@ public class Activity_Security extends AppCompatActivity {
 
         windowParams.gravity = Gravity.BOTTOM;
         window.setAttributes(windowParams);
+    }
+
+    private void createCustomToast(String message, int color) {
+        Toast toast = Toast.makeText(this, message, Toast.LENGTH_LONG);
+        toast.setGravity(Gravity.BOTTOM, 0, 400);
+        View view = toast.getView();
+        view.getBackground().setColorFilter(getColor(R.color.white), PorterDuff.Mode.SRC_IN);
+        TextView text = view.findViewById(android.R.id.message);
+        text.setTextColor(color);
+        text.setGravity(Gravity.CENTER);
+        toast.show();
     }
 
     public void hideKeyBoard() {

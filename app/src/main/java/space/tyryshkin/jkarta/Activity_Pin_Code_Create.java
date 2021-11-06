@@ -416,9 +416,10 @@ public class Activity_Pin_Code_Create extends AppCompatActivity {
                                 startActivity(intent);
                             }
                         } else {
-                            createCustomToast(getResources().getString(R.string.success_access_code),
+                            createCustomToast(getResources().getString(R.string.success),
                                     getColor(R.color.teal_500),
-                                    Gravity.BOTTOM, 400);
+                                    Gravity.BOTTOM,
+                                    400);
                             Intent intent = new Intent(Activity_Pin_Code_Create.this, Activity_Security.class);
                             startActivity(intent);
                         }
@@ -429,7 +430,8 @@ public class Activity_Pin_Code_Create extends AppCompatActivity {
                         onShakeImage();
                         createCustomToast(getResources().getString(R.string.codes_is_not_coincidence),
                                 getColor(R.color.error),
-                                Gravity.CENTER, 0);
+                                Gravity.CENTER,
+                                0);
                     }
                 }
             }

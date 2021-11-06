@@ -52,10 +52,15 @@
     <string name="set_access_code">Задайте код доступа</string>
     <string name="repeat_access_code">Повторите код доступа</string>
     <string name="success_access_code">Код доступа успешно задан</string>
+    <string name="cancel_access_code">Код доступа не назначен</string>
+    <string name="remove_access_code">Код доступа сброшен</string>
     <string name="yes">Да</string>
     <string name="no">Нет</string>
     <string name="use_finger_print_for_enter">Использовать отпечаток пальца для входа в приложение?</string>
     <string name="use_access_code_for_enter">Использовать код доступа для входа в приложение?</string>
+    <string name="cancel_finger_print">Вход по отмечатку пальца не назначен</string>
+    <string name="remove_finger_print">Вход по отпечатку пальца отменен</string>
+    <string name="success">Успешно!</string>
     <string name="codes_is_not_coincidence">Коды доступа не совпадают</string>
     <string name="enter_app">Вход в приложение</string>
     <string name="add_finger_print">Добавление отпечатка пальца</string>

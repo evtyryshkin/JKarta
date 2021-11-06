@@ -2,10 +2,14 @@ package space.tyryshkin.jkarta;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.biometric.BiometricManager;
+import androidx.biometric.BiometricPrompt;
+import androidx.core.content.ContextCompat;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.text.Editable;
@@ -31,6 +35,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -39,6 +44,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.concurrent.Executor;
 
 public class Activity_SignIn extends AppCompatActivity {
 
@@ -47,10 +53,16 @@ public class Activity_SignIn extends AppCompatActivity {
     private Button btn_sign_in, btn_sign_up, btn_restore_password;
 
     private FirebaseAuth mAuth;
+    private FirebaseUser currentUser;
     private DatabaseReference userDataBase;
     private String USER_KEY = "users";
 
     private ArrayList<String> listOfEmail = new ArrayList<>();
+
+    private SharedPreferences sharedPreferences;
+    private androidx.biometric.BiometricManager biometricManager;
+    private BiometricPrompt biometricPrompt;
+    private boolean isHasFingerprint;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,7 +83,16 @@ public class Activity_SignIn extends AppCompatActivity {
         btn_restore_password = findViewById(R.id.btn_restore_password);
 
         mAuth = FirebaseAuth.getInstance();
+        currentUser = mAuth.getCurrentUser();
         userDataBase = FirebaseDatabase.getInstance().getReference(USER_KEY);
+
+        sharedPreferences = getSharedPreferences((currentUser).getUid(), MODE_PRIVATE);
+        biometricManager = androidx.biometric.BiometricManager.from(getApplicationContext());
+        isHasFingerprint = sharedPreferences.getBoolean(Model_User.PREFERENCES_IS_HAS_FINGERPRINT, false);
+        if (biometricManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK)
+                == BiometricManager.BIOMETRIC_SUCCESS && isHasFingerprint) {
+            invokeDialogFingerprint();
+        }
 
         findAllEmail();
     }
@@ -81,6 +102,7 @@ public class Activity_SignIn extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (checkValidateEmail() && checkValidatePassword()) {
+                    hideKeyBoard();
                     mAuth.signInWithEmailAndPassword(email_edit.getText().toString(), password_edit.getText().toString())
                             .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                                 @Override
@@ -242,6 +264,37 @@ public class Activity_SignIn extends AppCompatActivity {
 
         windowParams.gravity = Gravity.BOTTOM;
         window.setAttributes(windowParams);
+    }
+
+    @SuppressLint("WrongConstant")
+    private void invokeDialogFingerprint() {
+        Executor executor = ContextCompat.getMainExecutor(this);
+
+        biometricPrompt = new BiometricPrompt(Activity_SignIn.this, executor, new BiometricPrompt.AuthenticationCallback() {
+            @Override
+            public void onAuthenticationError(int errorCode, CharSequence errString) {
+                super.onAuthenticationError(errorCode, errString);
+            }
+
+            @Override
+            public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result) {
+                super.onAuthenticationSucceeded(result);
+                Intent intent = new Intent(Activity_SignIn.this, Activity_General_Space_App.class);
+                startActivity(intent);
+            }
+
+            @Override
+            public void onAuthenticationFailed() {
+                super.onAuthenticationFailed();
+            }
+        });
+
+        BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
+                .setTitle(getResources().getString(R.string.enter_app))
+                .setNegativeButtonText(getResources().getString(R.string.cancel2))
+                .build();
+
+        biometricPrompt.authenticate(promptInfo);
     }
 
     private void findAllEmail() {

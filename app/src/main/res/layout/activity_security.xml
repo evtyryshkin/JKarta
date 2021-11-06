@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Activity_Profile">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/primary_500"
+        app:contentInsetStart="0dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/btn_back"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:background="@color/primary_500"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="16dp"
+                android:src="@drawable/ic_arrow_back_white" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="16dp"
+                android:text="@string/authorisation"
+                android:textColor="@color/white"
+                android:textSize="20sp" />
+        </RelativeLayout>
+    </com.google.android.material.appbar.MaterialToolbar>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/toolbar"
+        android:layout_marginHorizontal="4dp"
+        android:padding="8dp">
+
+        <RelativeLayout
+            android:id="@+id/passwordStroke"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:background="@drawable/fon_white"
+            android:elevation="8dp"
+            android:paddingHorizontal="4dp"
+            android:paddingVertical="12dp">
+
+            <ImageView
+                android:id="@+id/ic_password"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_marginVertical="2dp"
+                android:layout_marginHorizontal="8dp"
+                android:src="@drawable/ic_settings_password"
+                android:scaleType="centerInside"
+                android:background="@drawable/fon_primary_500"/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@+id/ic_password"
+                android:layout_centerVertical="true"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/password_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="@string/password"
+                    android:textColor="@color/secondary_500"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/password_sub_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginEnd="14dp"
+                    android:text="@string/settings_password"
+                    android:textColor="@color/dark_grey"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/accessCodeStroke"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/passwordStroke"
+            android:layout_margin="10dp"
+            android:background="@drawable/fon_white"
+            android:elevation="8dp"
+            android:paddingHorizontal="4dp"
+            android:paddingVertical="12dp">
+
+            <ImageView
+                android:id="@+id/ic_access_code"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_marginVertical="2dp"
+                android:layout_marginHorizontal="8dp"
+                android:src="@drawable/ic_settings_pin_code"
+                android:scaleType="centerInside"
+                android:background="@drawable/fon_primary_500"/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@+id/ic_access_code"
+                android:layout_centerVertical="true"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/access_code_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="@string/access_code"
+                    android:textColor="@color/secondary_500"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/access_code_sub_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginEnd="14dp"
+                    android:text="@string/settings_access_code"
+                    android:textColor="@color/dark_grey"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/biometricStroke"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/accessCodeStroke"
+            android:layout_margin="10dp"
+            android:background="@drawable/fon_white"
+            android:elevation="8dp"
+            android:paddingHorizontal="4dp"
+            android:paddingVertical="12dp">
+
+            <ImageView
+                android:id="@+id/ic_biometric"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_marginVertical="2dp"
+                android:layout_marginHorizontal="8dp"
+                android:src="@drawable/ic_fingerprint_white"
+                android:scaleType="centerInside"
+                android:background="@drawable/fon_primary_500"/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@+id/ic_biometric"
+                android:layout_centerVertical="true"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/biometric_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="@string/biometric"
+                    android:textColor="@color/secondary_500"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/biometric_sub_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginEnd="14dp"
+                    android:text="@string/settings_biometric"
+                    android:textColor="@color/dark_grey"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+</RelativeLayout>

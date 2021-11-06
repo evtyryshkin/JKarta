@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.text.Editable;
@@ -49,6 +50,9 @@ public class Activity_SignUp extends AppCompatActivity {
 
     private ArrayList<String> listOfEmail = new ArrayList<>();
 
+    private SharedPreferences sharedPreferences;
+    private SharedPreferences.Editor editor;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,6 +74,9 @@ public class Activity_SignUp extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
         userDataBase = FirebaseDatabase.getInstance().getReference(USER_KEY);
+
+        sharedPreferences = getSharedPreferences(Objects.requireNonNull(mAuth.getCurrentUser()).getUid(), MODE_PRIVATE);
+        editor = sharedPreferences.edit();
     }
 
     private void onClicks() {
@@ -91,6 +98,10 @@ public class Activity_SignUp extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
+                            editor.putString(Model_User.PREFERENCES_PIN, "");
+                            editor.putBoolean(Model_User.PREFERENCES_IS_HAS_FINGERPRINT, false);
+                            editor.apply();
+
                             Objects.requireNonNull(mAuth.getCurrentUser()).sendEmailVerification().addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
@@ -112,6 +123,7 @@ public class Activity_SignUp extends AppCompatActivity {
                             userDataBase.child(mAuth.getCurrentUser().getUid()).setValue(newUser);
 
                             Intent intent = new Intent(getApplicationContext(), Activity_Pin_Code_Create.class);
+                            intent.putExtra("FROM_ACTIVITY", "Activity_SignUp");
                             startActivity(intent);
 
                         } else {

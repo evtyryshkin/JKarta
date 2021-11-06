@@ -15,6 +15,7 @@ import android.hardware.biometrics.BiometricManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -42,8 +43,10 @@ public class Activity_Pin_Code_Create extends AppCompatActivity {
     private TextView set_access_code, num_0, num_1, num_2, num_3, num_4, num_5, num_6, num_7, num_8, num_9;
     private ImageView pin_1, pin_2, pin_3, pin_4, pin_5, pin_6, pin_7, pin_8, backspace;
     private LinearLayout layout_pin2;
-    private ImageButton skip;
+    private ImageButton back, skip;
 
+    private String sharedPref_pin_code = "";
+    private String pin_code_0 = "";
     private String pin_code_1 = "";
     private String pin_code_2 = "";
 
@@ -54,6 +57,7 @@ public class Activity_Pin_Code_Create extends AppCompatActivity {
     private final ArrayList<ImageView> listOfPin1 = new ArrayList<>();
     private final ArrayList<ImageView> listOfPin2 = new ArrayList<>();
 
+    private String FROM_ACTIVITY = "";
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
 
@@ -69,12 +73,14 @@ public class Activity_Pin_Code_Create extends AppCompatActivity {
         onTouches();
     }
 
-    @SuppressLint({"SwitchIntDef", "CommitPrefEdits"})
+    @SuppressLint({"SwitchIntDef", "CommitPrefEdits", "UseCompatLoadingForDrawables"})
     private void init() {
         window = Activity_Pin_Code_Create.this.getWindow();
 
-        skip = findViewById(R.id.skip);
+        FROM_ACTIVITY = getIntent().getStringExtra("FROM_ACTIVITY");
 
+        back = findViewById(R.id.back_button);
+        skip = findViewById(R.id.skip);
         set_access_code = findViewById(R.id.set_access_code);
 
         num_0 = findViewById(R.id.num_0);
@@ -113,9 +119,27 @@ public class Activity_Pin_Code_Create extends AppCompatActivity {
 
         sharedPreferences = getSharedPreferences(Objects.requireNonNull(mAuth.getCurrentUser()).getUid(), MODE_PRIVATE);
         editor = sharedPreferences.edit();
+        sharedPref_pin_code = sharedPreferences.getString("PREFERENCES_PIN", "");
+
+        if (FROM_ACTIVITY.equals("Activity_Security")) {
+            back.setVisibility(View.VISIBLE);
+            skip.setVisibility(View.INVISIBLE);
+            if (!TextUtils.isEmpty(sharedPref_pin_code)) {
+                set_access_code.setText(R.string.enter_current_access_code);
+            } else {
+                set_access_code.setText(R.string.set_access_code);
+            }
+        } else {
+            back.setVisibility(View.INVISIBLE);
+            skip.setVisibility(View.VISIBLE);
+            set_access_code.setText(R.string.set_access_code);
+        }
     }
 
     private void onClicks() {
+        back.setOnClickListener(view -> {
+            onBackPressed();
+        });
         skip.setOnClickListener(view -> {
             Intent intent = new Intent(Activity_Pin_Code_Create.this, Activity_Profile.class);
             intent.putExtra("FROM_ACTIVITY", "Activity_Pin_Code_Create");
@@ -152,15 +176,22 @@ public class Activity_Pin_Code_Create extends AppCompatActivity {
             addNumber("9");
         });
         backspace.setOnClickListener(view -> {
-            if (pin_code_1.length() < 4){
-                if (pin_code_1.length() > 0) {
-                    pin_code_1 = pin_code_1.substring(0, pin_code_1.length() - 1);
-                    logicPin(listOfPin1, pin_code_1);
+            if (!TextUtils.isEmpty(sharedPref_pin_code) && pin_code_0.length() < 4) {
+                if (pin_code_0.length() > 0) {
+                    pin_code_0 = pin_code_0.substring(0, pin_code_0.length() - 1);
+                    logicPin(listOfPin1, pin_code_0);
                 }
             } else {
-                if (pin_code_2.length() > 0) {
-                    pin_code_2 = pin_code_2.substring(0, pin_code_2.length() - 1);
-                    logicPin(listOfPin2, pin_code_2);
+                if (pin_code_1.length() < 4) {
+                    if (pin_code_1.length() > 0) {
+                        pin_code_1 = pin_code_1.substring(0, pin_code_1.length() - 1);
+                        logicPin(listOfPin1, pin_code_1);
+                    }
+                } else {
+                    if (pin_code_2.length() > 0) {
+                        pin_code_2 = pin_code_2.substring(0, pin_code_2.length() - 1);
+                        logicPin(listOfPin2, pin_code_2);
+                    }
                 }
             }
         });
@@ -291,6 +322,15 @@ public class Activity_Pin_Code_Create extends AppCompatActivity {
             return false;
         });
         //noinspection AndroidLintClickableViewAccessibility
+        back.setOnTouchListener((view, motionEvent) -> {
+            if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                back.setBackgroundDrawable(getResources().getDrawable(R.drawable.fon_grey));
+            } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                back.setBackgroundColor(getColor(R.color.white));
+            }
+            return false;
+        });
+        //noinspection AndroidLintClickableViewAccessibility
         skip.setOnTouchListener((view, motionEvent) -> {
             if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
                 skip.setBackgroundDrawable(getResources().getDrawable(R.drawable.fon_grey));
@@ -302,12 +342,17 @@ public class Activity_Pin_Code_Create extends AppCompatActivity {
     }
 
     private void addNumber(String number) {
-        if (pin_code_1.length() < 4) {
-            pin_code_1 = pin_code_1 + number;
-            logicPin(listOfPin1, pin_code_1);
-        } else if (pin_code_1.length() == 4) {
-            pin_code_2 = pin_code_2 + number;
-            logicPin(listOfPin2, pin_code_2);
+        if (TextUtils.isEmpty(sharedPref_pin_code) || pin_code_0.length() == 4) {
+            if (pin_code_1.length() < 4) {
+                pin_code_1 = pin_code_1 + number;
+                logicPin(listOfPin1, pin_code_1);
+            } else if (pin_code_1.length() == 4) {
+                pin_code_2 = pin_code_2 + number;
+                logicPin(listOfPin2, pin_code_2);
+            }
+        } else {
+            pin_code_0 = pin_code_0 + number;
+            logicPin(listOfPin1, pin_code_0);
         }
     }
 
@@ -324,52 +369,68 @@ public class Activity_Pin_Code_Create extends AppCompatActivity {
         } else if (pin_code.length() == 4) {
             setColorPin(listOfPin, 4);
 
-            if (pin_code_2.length() == 0) {
-                set_access_code.setText(R.string.repeat_access_code);
-                layout_pin2.setVisibility(View.VISIBLE);
-            } else {
-                if (pin_code_1.equals(pin_code_2)) {
-                    editor.putString(Model_User.PREFERENCES_PIN, pin_code_1);
-                    editor.apply();
-
-                    if (biometricManager.canAuthenticate(androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK)
-                            == BiometricManager.BIOMETRIC_SUCCESS) {
-                        Dialog dialog = createDialog(R.layout.dialog_set_finger_print);
-                        placeDialogBottom(dialog);
-
-                        MaterialButton no = dialog.findViewById(R.id.btn_no);
-                        MaterialButton yes = dialog.findViewById(R.id.btn_yes);
-
-                        yes.setOnClickListener(view -> {
-                            dialog.dismiss();
-                            invokeDialogFingerprint();
-                        });
-
-                        no.setOnClickListener(view -> {
-                            dialog.dismiss();
-                            Intent intent = new Intent(Activity_Pin_Code_Create.this, Activity_Profile.class);
-                            intent.putExtra("FROM_ACTIVITY", "Activity_Pin_Code_Create");
-                            startActivity(intent);
-                        });
-                        dialog.show();
-                    } else {
-                        Intent intent = new Intent(Activity_Pin_Code_Create.this, Activity_Profile.class);
-                        intent.putExtra("FROM_ACTIVITY", "Activity_Pin_Code_Create");
-                        startActivity(intent);
-                    }
-
+            if (pin_code_1.length() == 0) {
+                if (pin_code_0.equals(sharedPref_pin_code)) {
+                    set_access_code.setText(R.string.set_access_code);
+                    setColorPin(listOfPin, 0);
                 } else {
-                    pin_code_1 = "";
-                    pin_code_2 = "";
+                    pin_code_0 = "";
                     onShakeImage();
+                    createCustomToast(getResources().getString(R.string.error_current_access_code),
+                            getColor(R.color.error),
+                            Gravity.CENTER, 0);
+                }
+            } else {
+                if (pin_code_2.length() == 0) {
+                    set_access_code.setText(R.string.repeat_access_code);
+                    layout_pin2.setVisibility(View.VISIBLE);
+                } else {
+                    if (pin_code_1.equals(pin_code_2)) {
+                        editor.putString(Model_User.PREFERENCES_PIN, pin_code_1);
+                        editor.apply();
 
-                    Toast toast = Toast.makeText(this, getResources().getString(R.string.codes_is_not_coincidence), Toast.LENGTH_LONG);
-                    toast.setGravity(Gravity.CENTER, 0, 0);
-                    View view = toast.getView();
-                    view.getBackground().setColorFilter(getColor(R.color.white), PorterDuff.Mode.SRC_IN);
-                    TextView text = view.findViewById(android.R.id.message);
-                    text.setTextColor(getColor(R.color.error));
-                    toast.show();
+                        if (!FROM_ACTIVITY.equals("Activity_Security")) {
+                            if (biometricManager.canAuthenticate(androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK)
+                                    == BiometricManager.BIOMETRIC_SUCCESS) {
+                                Dialog dialog = createDialog(R.layout.dialog_set_finger_print);
+                                placeDialogBottom(dialog);
+
+                                MaterialButton no = dialog.findViewById(R.id.btn_no);
+                                MaterialButton yes = dialog.findViewById(R.id.btn_yes);
+
+                                yes.setOnClickListener(view -> {
+                                    dialog.dismiss();
+                                    invokeDialogFingerprint();
+                                });
+
+                                no.setOnClickListener(view -> {
+                                    dialog.dismiss();
+                                    Intent intent = new Intent(Activity_Pin_Code_Create.this, Activity_Profile.class);
+                                    intent.putExtra("FROM_ACTIVITY", "Activity_Pin_Code_Create");
+                                    startActivity(intent);
+                                });
+                                dialog.show();
+                            } else {
+                                Intent intent = new Intent(Activity_Pin_Code_Create.this, Activity_Profile.class);
+                                intent.putExtra("FROM_ACTIVITY", "Activity_Pin_Code_Create");
+                                startActivity(intent);
+                            }
+                        } else {
+                            createCustomToast(getResources().getString(R.string.success_access_code),
+                                    getColor(R.color.teal_500),
+                                    Gravity.BOTTOM, 400);
+                            Intent intent = new Intent(Activity_Pin_Code_Create.this, Activity_Security.class);
+                            startActivity(intent);
+                        }
+                    } else {
+                        pin_code_0 = "";
+                        pin_code_1 = "";
+                        pin_code_2 = "";
+                        onShakeImage();
+                        createCustomToast(getResources().getString(R.string.codes_is_not_coincidence),
+                                getColor(R.color.error),
+                                Gravity.CENTER, 0);
+                    }
                 }
             }
 
@@ -420,7 +481,11 @@ public class Activity_Pin_Code_Create extends AppCompatActivity {
                 pin_6.setImageResource(R.drawable.pin_grey);
                 pin_7.setImageResource(R.drawable.pin_grey);
                 pin_8.setImageResource(R.drawable.pin_grey);
-                set_access_code.setText(R.string.set_access_code);
+                if (TextUtils.isEmpty(sharedPref_pin_code)) {
+                    set_access_code.setText(R.string.set_access_code);
+                } else {
+                    set_access_code.setText(R.string.enter_current_access_code);
+                }
                 layout_pin2.setVisibility(View.INVISIBLE);
             }
         }, 1000);
@@ -489,8 +554,22 @@ public class Activity_Pin_Code_Create extends AppCompatActivity {
         biometricPrompt.authenticate(promptInfo);
     }
 
+    private void createCustomToast(String message, int color, int gravity, int yOffset) {
+        Toast toast = Toast.makeText(this, message, Toast.LENGTH_LONG);
+        toast.setGravity(gravity, 0, yOffset);
+        View view = toast.getView();
+        view.getBackground().setColorFilter(getColor(R.color.white), PorterDuff.Mode.SRC_IN);
+        TextView text = view.findViewById(android.R.id.message);
+        text.setTextColor(color);
+        text.setGravity(Gravity.CENTER);
+        toast.show();
+    }
+
     @Override
     public void onBackPressed() {
-//Должно быть пустым!!!
+        if (FROM_ACTIVITY.equals("Activity_Security")) {
+            Intent intent = new Intent(Activity_Pin_Code_Create.this, Activity_Security.class);
+            startActivity(intent);
+        }
     }
 }

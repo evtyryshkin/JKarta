@@ -22,6 +22,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -33,16 +34,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.Continuation;
-import com.google.android.gms.tasks.OnCanceledListener;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.EmailAuthCredential;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -70,8 +69,6 @@ public class Activity_Profile extends AppCompatActivity {
 
     private String FROM_ACTIVITY = "";
 
-    private Model_User user;
-
     private TextView avatar_text, email, login, city, sex, birthday;
     private RelativeLayout emailStroke, loginStroke, cityStroke, sexStroke, birthdayStroke;
     private CircleImageView profileSimpleImageView, profileImageView;
@@ -81,6 +78,7 @@ public class Activity_Profile extends AppCompatActivity {
     private ImageButton btn_remove_image, btn_back, btn_exit, error_email_auth, error_phone_auth;
 
     private FirebaseAuth mAuth;
+    private FirebaseAuth.AuthStateListener mAuthStateListener;
     private DatabaseReference userDataBase;
     private String USER_KEY = "users";
     private Uri imageUri;
@@ -91,7 +89,7 @@ public class Activity_Profile extends AppCompatActivity {
 
     private final ArrayList<String> listOfLogin = new ArrayList<>();
     private final ArrayList<String> listOfEmail = new ArrayList<>();
-    Map<String, ArrayList<String>> mapCitiesInRegion = new HashMap<>();
+    private final Map<String, ArrayList<String>> mapCitiesInRegion = new HashMap<>();
     String region; //Так и не нашел способа локализовать переменную в методе
 
     RadioButton radioButtonSex; //Так и не нашел способа локализовать переменную в методе
@@ -109,19 +107,25 @@ public class Activity_Profile extends AppCompatActivity {
     @SuppressLint("CutPasteId")
     public void init() {
         FROM_ACTIVITY = getIntent().getStringExtra("FROM_ACTIVITY");
+
         btn_back = findViewById(R.id.btn_back);
         btn_exit = findViewById(R.id.btn_exit);
-        if (FROM_ACTIVITY.equals("Activity_Pin_Code_Create")) {
-            btn_back.setVisibility(View.INVISIBLE);
-            btn_exit.setVisibility(View.INVISIBLE);
-        } else if (FROM_ACTIVITY.equals("Activity_General_Space_App")) {
-            btn_back.setVisibility(View.VISIBLE);
-            btn_exit.setVisibility(View.VISIBLE);
-        }
 
         error_layout = findViewById(R.id.error_layout);
         error_email_auth = findViewById(R.id.error_email_auth);
         error_phone_auth = findViewById(R.id.error_phone_auth);
+
+        if (FROM_ACTIVITY.equals("Activity_Pin_Code_Create")) {
+            btn_back.setVisibility(View.INVISIBLE);
+            btn_exit.setVisibility(View.INVISIBLE);
+            error_layout.setVisibility(View.INVISIBLE);
+        } else if (FROM_ACTIVITY.equals("Activity_General_Space_App")) {
+            btn_back.setVisibility(View.VISIBLE);
+            btn_exit.setVisibility(View.VISIBLE);
+            error_layout.setVisibility(View.VISIBLE);
+
+            error_phone_auth.setVisibility(View.INVISIBLE);
+        }
 
         profileSimpleImageView = findViewById(R.id.profile_simple_image);
         profileImageView = findViewById(R.id.profile_image);
@@ -141,6 +145,20 @@ public class Activity_Profile extends AppCompatActivity {
         btn_ready = findViewById(R.id.btn_ready);
 
         mAuth = FirebaseAuth.getInstance();
+        /*mAuthStateListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+                if (firebaseUser != null) {
+                    if (mAuth.getCurrentUser().isEmailVerified()) {
+                        error_email_auth.setVisibility(View.INVISIBLE);
+                    } else {
+                        error_email_auth.setVisibility(View.VISIBLE);
+                    }
+                }
+            }
+        };*/
+        
         userDataBase = FirebaseDatabase.getInstance().getReference(USER_KEY);
         storageProfileAvatar = FirebaseStorage.getInstance().getReference().child("Avatars");
 
@@ -150,14 +168,11 @@ public class Activity_Profile extends AppCompatActivity {
         loadProfileDataFromFirebase();
         findAllEmailAndLogin();
 
-        visibleAuthError();
-        isVerified();
+        /*isVerified();*/
     }
+
     private void visibleAuthError() {
-        if (mAuth.getCurrentUser().isEmailVerified() && mAuth.getCurrentUser().getEmail().equals(user.getEmail())) {
-            error_email_auth.setVisibility(View.INVISIBLE);
-        }
-        error_layout.removeView(error_phone_auth);
+
     }
 
     private void isVerified() {
@@ -209,6 +224,9 @@ public class Activity_Profile extends AppCompatActivity {
             uploadProfileImage();
             saveProfileDataToFirebase();
             Intent intent = new Intent(Activity_Profile.this, Activity_General_Space_App.class);
+            if (FROM_ACTIVITY.equals("Activity_General_Space_App")) {
+                intent.putExtra("SPECIFIC_FRAGMENT", "Fragment_General_Settings");
+            }
             startActivity(intent);
         });
     }
@@ -327,22 +345,7 @@ public class Activity_Profile extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                if (Objects.requireNonNull(edit.getText()).toString().equals("")) {
-                    login_layout.setError("Поле обязательно для заполнения");
-                    save.setEnabled(false);
-                } else if (edit.getText().toString().length() < 5) {
-                    login_layout.setError("Минимум 5 символов");
-                    save.setEnabled(false);
-                } else if (edit.getText().toString().contains(" ")) {
-                    login_layout.setError("Пробелы не разрешены");
-                    save.setEnabled(false);
-                } else if (containsIgnoreCase(listOfLogin, edit.getText().toString())) {
-                    login_layout.setError("Логин уже существует");
-                    save.setEnabled(false);
-                } else {
-                    login_layout.setError(null);
-                    save.setEnabled(true);
-                }
+                checkValidateLogin(login_layout, edit, save);
             }
 
             @Override
@@ -360,6 +363,28 @@ public class Activity_Profile extends AppCompatActivity {
         dialog.show();
     }
 
+    private void checkValidateLogin(TextInputLayout login_layout, EditText edit, MaterialButton save) {
+        if (Objects.requireNonNull(edit.getText()).toString().equals("")) {
+            login_layout.setError("Поле обязательно для заполнения");
+            save.setEnabled(false);
+        } else if (edit.getText().toString().contains(" ")) {
+            login_layout.setError("Пробелы не разрешены");
+            save.setEnabled(false);
+        } else if (edit.getText().toString().contains("@")) {
+            login_layout.setError("Символ \"@\" не разрешен");
+            save.setEnabled(false);
+        } else if (edit.getText().toString().length() < 5) {
+            login_layout.setError("Минимум 5 символов");
+            save.setEnabled(false);
+        } else if (containsIgnoreCase(listOfLogin, edit.getText().toString())) {
+            login_layout.setError("Логин уже существует");
+            save.setEnabled(false);
+        } else {
+            login_layout.setError(null);
+            save.setEnabled(true);
+        }
+    }
+
     private void openDialogEmail() {
         Dialog dialog = createDialog(R.layout.dialog_change_email);
 
@@ -367,66 +392,136 @@ public class Activity_Profile extends AppCompatActivity {
 
         TextInputLayout email_layout = dialog.findViewById(R.id.email_layout);
         TextInputEditText email_edit = dialog.findViewById(R.id.email_edit);
+        TextInputLayout password_layout = dialog.findViewById(R.id.password_layout);
+        TextInputEditText password_edit = dialog.findViewById(R.id.password_edit);
         MaterialButton cancel = dialog.findViewById(R.id.btn_cancel);
         MaterialButton next = dialog.findViewById(R.id.btn_next);
 
         email_edit.setText(email.getText());
 
-        email_edit.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                checkValidateEmail2(email_layout, email_edit, next);
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-            }
-        });
-
         next.setOnClickListener(view -> {
-            FirebaseUser firebaseUser = mAuth.getCurrentUser();
-
-            firebaseUser.updateEmail(email_edit.getText().toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
+            email_edit.addTextChangedListener(new TextWatcher() {
                 @Override
-                public void onComplete(@NonNull Task<Void> task) {
-                    if (task.isSuccessful()) {
-                        dialog.dismiss();
-                        email.setText(Objects.requireNonNull(email_edit.getText()).toString());
+                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                }
 
-                        visibleAuthError();
+                @Override
+                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                    if (checkValidateEmail2(email_layout, email_edit, next)
+                            && checkValidatePassword(password_layout, password_edit, next)) {
+                        next.setEnabled(true);
                     }
                 }
-            });
-        });
 
+                @Override
+                public void afterTextChanged(Editable editable) {
+                }
+            });
+
+            password_edit.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                }
+
+                @Override
+                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                    if (checkValidatePassword(password_layout, password_edit, next)
+                            && checkValidateEmail2(email_layout, email_edit, next)) {
+                        next.setEnabled(true);
+                    }
+                }
+
+                @Override
+                public void afterTextChanged(Editable editable) {
+                }
+            });
+
+            if (checkValidateEmail2(email_layout, email_edit, next) && checkValidatePassword(password_layout, password_edit, next)) {
+                FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+
+                if (firebaseUser != null) {
+                    AuthCredential credential = EmailAuthProvider.getCredential(firebaseUser.getEmail(),
+                            password_edit.getText().toString());
+                    firebaseUser.reauthenticate(credential).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                FirebaseUser localUser = FirebaseAuth.getInstance().getCurrentUser();
+                                localUser.updateEmail(email_edit.getText().toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        if (task.isSuccessful()) {
+                                            userDataBase.child(Objects.requireNonNull(localUser).getUid())
+                                                    .child("email").setValue(email_edit.getText().toString());
+                                            FirebaseAuth.getInstance().signInWithEmailAndPassword(email_edit.getText().toString(), password_edit.getText().toString())
+                                                    .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                                                        @Override
+                                                        public void onComplete(@NonNull Task<AuthResult> task) {
+
+                                                        }
+                                                    });
+                                        }
+                                    }
+                                });
+                            } else {
+                                hideKeyBoard();
+                                invokeToastError1(getResources().getString(R.string.failure1));
+                            }
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            hideKeyBoard();
+                            invokeToastError1(getResources().getString(R.string.failure1));
+                        }
+                    });
+                } else {
+                    hideKeyBoard();
+                    invokeToastError1(getResources().getString(R.string.failure3));
+                }
+                dialog.dismiss();
+            }
+        });
 
         cancel.setOnClickListener(view -> dialog.dismiss());
 
         dialog.show();
     }
 
-    private void checkValidateEmail2(TextInputLayout email_layout, EditText edit, MaterialButton next) {
+    private boolean checkValidateEmail2(TextInputLayout email_layout, EditText edit, MaterialButton next) {
         if (Objects.requireNonNull(edit.getText()).toString().equals("")) {
             email_layout.setError("Поле обязательно для заполнения");
             next.setEnabled(false);
+            return false;
         } else if (!isEmailValid(edit.getText().toString())) {
             email_layout.setError("Пример: mail@example.com");
             next.setEnabled(false);
+            return false;
         } else if (containsIgnoreCase(listOfEmail, edit.getText().toString())) {
-            email_layout.setError("Email уже существует");
+            email_layout.setError("Email уже зарегистрирован");
             next.setEnabled(false);
+            return false;
         } else {
             email_layout.setError(null);
             next.setEnabled(true);
+            return true;
         }
     }
 
     private boolean isEmailValid(CharSequence email) {
         return Patterns.EMAIL_ADDRESS.matcher(email).matches();
+    }
+
+    private boolean checkValidatePassword(TextInputLayout password_layout, EditText edit, MaterialButton next) {
+        String password = edit.getText().toString();
+        if (password.equals("")) {
+            password_layout.setError("Поле обязательно для заполнения");
+            next.setEnabled(false);
+            return false;
+        } else {
+            password_layout.setError(null);
+            return true;
+        }
     }
 
     private void openDialogsRegionAndCities(int layoutResourceFile, Dialog previousDialog) {
@@ -507,6 +602,21 @@ public class Activity_Profile extends AppCompatActivity {
             dialog.dismiss();
         });
         dialog.show();
+    }
+
+    private void createColorOfRadioButton(RadioButton radioButton) {
+        ColorStateList colorStateList = new ColorStateList(
+                new int[][]{
+                        new int[]{-android.R.attr.state_checked},
+                        new int[]{android.R.attr.state_checked}
+                },
+                new int[]{
+                        getResources().getColor(R.color.dark_grey),
+                        getResources().getColor(R.color.primary_500),
+                }
+        );
+        radioButton.setButtonTintList(colorStateList);
+        radioButton.invalidate();
     }
 
     @SuppressLint("SetTextI18n")
@@ -591,21 +701,6 @@ public class Activity_Profile extends AppCompatActivity {
         }
     }
 
-    private void createColorOfRadioButton(RadioButton radioButton) {
-        ColorStateList colorStateList = new ColorStateList(
-                new int[][]{
-                        new int[]{-android.R.attr.state_checked},
-                        new int[]{android.R.attr.state_checked}
-                },
-                new int[]{
-                        getResources().getColor(R.color.dark_grey),
-                        getResources().getColor(R.color.primary_500),
-                }
-        );
-        radioButton.setButtonTintList(colorStateList);
-        radioButton.invalidate();
-    }
-
     private void searchCitiesFromFirebase(ProgressDialog progressDialog, Dialog dialog, RadioGroup radioGroup) {
         citiesDataBase.addValueEventListener(new ValueEventListener() {
             @Override
@@ -618,7 +713,7 @@ public class Activity_Profile extends AppCompatActivity {
                     if (!mapCitiesInRegion.containsKey(region)) {
                         mapCitiesInRegion.put(region, new ArrayList<>());
                     }
-                    mapCitiesInRegion.get(region).add(city);
+                    Objects.requireNonNull(mapCitiesInRegion.get(region)).add(city);
                 }
 
                 if (progressDialog != null) {
@@ -674,45 +769,29 @@ public class Activity_Profile extends AppCompatActivity {
                         sex.setText(user_sex);
                         birthday.setText(user_birthday);
 
+                        mAuth = FirebaseAuth.getInstance();
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        user.reload();
+                        mAuth = FirebaseAuth.getInstance();
+
+                        if (user.isEmailVerified()) {
+                            error_email_auth.setVisibility(View.INVISIBLE);
+                        } else {
+                            error_email_auth.setVisibility(View.VISIBLE);
+                        }
+
                         progressDialog.dismiss();
                     } else {
-                        invokeToastError();
+                        invokeToastError1(getResources().getString(R.string.failure2));
                     }
-
-                    /*user = snapshot.getValue(Model_User.class);
-
-                    assert user != null;
-                    if (user.getImage() != null && !user.getImage().equals("")) {
-                        profileSimpleImageView.setVisibility(View.INVISIBLE);
-                        avatar_text.setVisibility(View.INVISIBLE);
-                        btn_remove_image.setVisibility(View.VISIBLE);
-                        profileImageView.setVisibility(View.VISIBLE);
-                        Picasso.get().load(user.getImage()).into(profileImageView);
-                    }
-
-                    email.setText(mAuth.getCurrentUser().getEmail());
-                    assert user != null;
-                    if (user.getLogin().equals("")) {
-                        login.setText(user.getEmail().substring(0, user.getEmail().indexOf("@")));
-                    } else {
-                        login.setText(user.getLogin());
-                    }
-
-                    avatar_text.setText(Objects.requireNonNull(login.getText()).toString().substring(0, 1).toUpperCase());
-                    city.setText(user.getCity());
-                    sex.setText(user.getSex());
-                    birthday.setText(user.getBirthday());
-
-                    progressDialog.dismiss();*/
                 }
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError error) {
-
                 }
             });
         } else {
-            invokeToastError();
+            invokeToastError1(getResources().getString(R.string.failure2));
         }
     }
 
@@ -727,13 +806,16 @@ public class Activity_Profile extends AppCompatActivity {
     private void saveProfileDataToFirebase() {
         ProgressDialog progressDialog = createProgressDialog();
 
-        user.setEmail(email.getText().toString());
-        user.setLogin(login.getText().toString());
-        user.setCity(city.getText().toString());
-        user.setSex(sex.getText().toString());
-        user.setBirthday(birthday.getText().toString());
-
-        userDataBase.child(Objects.requireNonNull(mAuth.getCurrentUser()).getUid()).setValue(user);
+        userDataBase.child(Objects.requireNonNull(mAuth.getCurrentUser()).getUid())
+                .child("email").setValue(email.getText().toString());
+        userDataBase.child(Objects.requireNonNull(mAuth.getCurrentUser()).getUid())
+                .child("login").setValue(login.getText().toString());
+        userDataBase.child(Objects.requireNonNull(mAuth.getCurrentUser()).getUid())
+                .child("city").setValue(city.getText().toString());
+        userDataBase.child(Objects.requireNonNull(mAuth.getCurrentUser()).getUid())
+                .child("sex").setValue(sex.getText().toString());
+        userDataBase.child(Objects.requireNonNull(mAuth.getCurrentUser()).getUid())
+                .child("birthday").setValue(birthday.getText().toString());
 
         progressDialog.dismiss();
     }
@@ -802,7 +884,6 @@ public class Activity_Profile extends AppCompatActivity {
         });
     }
 
-
     private void openDialogError() {
         Dialog dialog = createDialog(R.layout.dialog_auth_send_email);
 
@@ -833,8 +914,10 @@ public class Activity_Profile extends AppCompatActivity {
         }
         return false;
     }
-    private void invokeToastError() {
-        Toast toast = Toast.makeText(Activity_Profile.this, getResources().getString(R.string.failure2), Toast.LENGTH_LONG);
+
+    private void invokeToastError1(String errorText) {
+        Toast toast = Toast.makeText(Activity_Profile.this, errorText, Toast.LENGTH_LONG);
+        toast.setGravity(Gravity.BOTTOM, 0, 400);
         View view = toast.getView();
         view.getBackground().setColorFilter(getColor(R.color.white), PorterDuff.Mode.SRC_IN);
         TextView text = view.findViewById(android.R.id.message);
@@ -851,6 +934,15 @@ public class Activity_Profile extends AppCompatActivity {
             Intent intent = new Intent(Activity_Profile.this, Activity_General_Space_App.class);
             intent.putExtra("SPECIFIC_FRAGMENT", "Fragment_General_Settings");
             startActivity(intent);
+        }
+    }
+
+    public void hideKeyBoard() {
+        View keyBoard = this.getCurrentFocus();
+        if (keyBoard != null) {
+            InputMethodManager inputMethodManager = (InputMethodManager) this.getSystemService(INPUT_METHOD_SERVICE);
+            assert inputMethodManager != null;
+            inputMethodManager.hideSoftInputFromWindow(keyBoard.getWindowToken(), 0);
         }
     }
 

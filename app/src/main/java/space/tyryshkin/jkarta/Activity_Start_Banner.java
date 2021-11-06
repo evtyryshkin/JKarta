@@ -2,6 +2,8 @@ package space.tyryshkin.jkarta;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.biometric.BiometricManager;
+import androidx.biometric.BiometricPrompt;
 import androidx.core.content.ContextCompat;
 
 import android.annotation.SuppressLint;
@@ -20,6 +22,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.concurrent.Executor;
 
 public class Activity_Start_Banner extends AppCompatActivity {
 
@@ -32,7 +35,6 @@ public class Activity_Start_Banner extends AppCompatActivity {
 
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +58,7 @@ public class Activity_Start_Banner extends AppCompatActivity {
             sharedPreferences = getSharedPreferences((currentUser).getUid(), MODE_PRIVATE);
             editor = sharedPreferences.edit();
         }
+
     }
 
     private void setStatusBarColor() {

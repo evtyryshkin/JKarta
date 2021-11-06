@@ -46,7 +46,7 @@ public class Activity_General_Space_App extends AppCompatActivity implements Nav
     private Toolbar toolbar;
     private final FragmentManager fragmentManager = getSupportFragmentManager();
 
-    private TextView avatar_text, login;
+    private TextView avatar_text, login, city;
     private CircleImageView profileSimpleImageView, profileImageView;
 
     private FirebaseAuth mAuth;
@@ -82,6 +82,7 @@ public class Activity_General_Space_App extends AppCompatActivity implements Nav
 
         avatar_text = headerView.findViewById(R.id.avatar_text);
         login = headerView.findViewById(R.id.login);
+        city = headerView.findViewById(R.id.city);
         profileSimpleImageView = headerView.findViewById(R.id.profile_simple_image);
         profileImageView = headerView.findViewById(R.id.profile_image);
 
@@ -191,11 +192,10 @@ public class Activity_General_Space_App extends AppCompatActivity implements Nav
                     profileImageView.setVisibility(View.VISIBLE);
                     Picasso.get().load(user.getImage()).into(profileImageView);
                 }
-                if (user.getLogin().equals("")) {
-                    login.setText(user.getEmail());
-                } else {
-                    login.setText(user.getLogin());
-                }
+
+                login.setText(user.getLogin());
+                city.setText(user.getCity());
+
                 avatar_text.setText(Objects.requireNonNull(login.getText()).toString().substring(0, 1).toUpperCase());
 
                 progressDialog.dismiss();

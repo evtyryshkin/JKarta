@@ -53,7 +53,9 @@ public class Fragment_General_Settings extends Fragment {
             startActivity(intent);
         });
         authStroke.setOnClickListener((view) -> {
-            Toast.makeText(getActivity(), "Вход и авторизация", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(getActivity(), Activity_Security.class);
+            intent.putExtra("FROM_ACTIVITY", "Activity_General_Space_App");
+            startActivity(intent);
         });
         notificationStroke.setOnClickListener((view) -> {
             Toast.makeText(getActivity(), "Уведомления", Toast.LENGTH_SHORT).show();

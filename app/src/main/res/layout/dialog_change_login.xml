@@ -38,7 +38,7 @@
             android:inputType="text"
             android:textColor="@color/secondary_500"
             android:textSize="16sp"
-            android:maxLength="25"/>
+            android:maxLength="17"/>
     </com.google.android.material.textfield.TextInputLayout>
 
     <LinearLayout

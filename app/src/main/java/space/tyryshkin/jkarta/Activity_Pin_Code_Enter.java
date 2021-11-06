@@ -19,7 +19,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,7 +27,6 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
@@ -79,7 +77,8 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
         onClicks();
         onTouches();
 
-        if (isHasFingerprint) {
+        if (biometricManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK)
+                == BiometricManager.BIOMETRIC_SUCCESS && isHasFingerprint) {
             invokeDialogFingerprint();
         }
     }
@@ -307,7 +306,7 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
     private void logicPin() {
         if (pin_code.length() == 0) {
             if (isHasFingerprint) {
-                backspace.setImageResource(R.drawable.ic_fingerprint);
+                backspace.setImageResource(R.drawable.ic_fingerprint_grey);
             } else {
                 backspace.setImageResource(R.drawable.ic_backspace);
             }
@@ -325,13 +324,13 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
             backspace.setImageResource(R.drawable.ic_backspace);
             setColorPin(listOfPin, 4);
 
-           if (sharedPreferences.getString(Model_User.PREFERENCES_PIN, "").equals(pin_code)) {
+            if (sharedPreferences.getString(Model_User.PREFERENCES_PIN, "").equals(pin_code)) {
                 Intent intent = new Intent(Activity_Pin_Code_Enter.this, Activity_General_Space_App.class);
                 startActivity(intent);
             } else {
                 pin_code = "";
                 if (isHasFingerprint) {
-                    backspace.setImageResource(R.drawable.ic_fingerprint);
+                    backspace.setImageResource(R.drawable.ic_fingerprint_grey);
                 } else {
                     backspace.setImageResource(R.drawable.ic_backspace);
                 }
@@ -448,7 +447,7 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
 
     @SuppressLint("WrongConstant")
     private void invokeDialogFingerprint() {
-        backspace.setImageResource(R.drawable.ic_fingerprint);
+        backspace.setImageResource(R.drawable.ic_fingerprint_grey);
 
         Executor executor = ContextCompat.getMainExecutor(this);
 

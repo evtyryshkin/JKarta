@@ -10,25 +10,14 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
-        android:text="@string/use_finger_print_for_enter"
+        android:text="@string/use_access_code_for_enter"
         android:textColor="@color/secondary_500"
         android:textSize="16sp" />
-
-    <ImageView
-        android:id="@+id/fingerprint_image"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:layout_below="@+id/tittle"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="16dp"
-        android:src="@drawable/ic_fingerprint_grey"/>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/fingerprint_image"
+        android:layout_below="@+id/tittle"
         android:layout_marginHorizontal="16dp"
         android:orientation="horizontal">
 

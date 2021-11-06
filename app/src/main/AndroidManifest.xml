@@ -6,9 +6,10 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage" />
-    <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
 
     <application
         android:allowBackup="true"
@@ -17,8 +18,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.JKarta">
-        <activity android:name=".Activity_Pin_Code_Create"
+        <activity android:name=".Activity_Security"
             android:screenOrientation="portrait"/>
+        <activity
+            android:name=".Activity_Pin_Code_Create"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".Activity_SignIn"
             android:screenOrientation="portrait"

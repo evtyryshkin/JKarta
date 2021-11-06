@@ -145,19 +145,6 @@ public class Activity_Profile extends AppCompatActivity {
         btn_ready = findViewById(R.id.btn_ready);
 
         mAuth = FirebaseAuth.getInstance();
-        /*mAuthStateListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
-                if (firebaseUser != null) {
-                    if (mAuth.getCurrentUser().isEmailVerified()) {
-                        error_email_auth.setVisibility(View.INVISIBLE);
-                    } else {
-                        error_email_auth.setVisibility(View.VISIBLE);
-                    }
-                }
-            }
-        };*/
         
         userDataBase = FirebaseDatabase.getInstance().getReference(USER_KEY);
         storageProfileAvatar = FirebaseStorage.getInstance().getReference().child("Avatars");
@@ -167,23 +154,6 @@ public class Activity_Profile extends AppCompatActivity {
 
         loadProfileDataFromFirebase();
         findAllEmailAndLogin();
-
-        /*isVerified();*/
-    }
-
-    private void visibleAuthError() {
-
-    }
-
-    private void isVerified() {
-        if (mAuth.getCurrentUser().isEmailVerified()) {
-            HashMap<String, Object> userMap = new HashMap<>();
-            userMap.put("email", mAuth.getCurrentUser().getEmail());
-
-            userDataBase.child(mAuth.getCurrentUser().getUid()).updateChildren(userMap);
-            findAllEmailAndLogin();
-            visibleAuthError();
-        }
     }
 
     private void onClicks() {
@@ -196,7 +166,20 @@ public class Activity_Profile extends AppCompatActivity {
             startActivity(intent);
         });
         error_email_auth.setOnClickListener(view -> {
-            openDialogError();
+            mAuth = FirebaseAuth.getInstance();
+            FirebaseUser user = mAuth.getCurrentUser();
+
+            if (user != null) {
+                user.reload();
+                mAuth = FirebaseAuth.getInstance();
+
+                if (user.isEmailVerified()) {
+                    error_email_auth.setVisibility(View.INVISIBLE);
+                } else {
+                    error_email_auth.setVisibility(View.VISIBLE);
+                    openDialogError();
+                }
+            }
         });
         error_phone_auth.setOnClickListener(view -> {
 
@@ -458,7 +441,8 @@ public class Activity_Profile extends AppCompatActivity {
                                                     .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                                                         @Override
                                                         public void onComplete(@NonNull Task<AuthResult> task) {
-
+                                                            createCustomToast(getResources().getString(R.string.success_change_email),
+                                                                    getColor(R.color.teal_500));
                                                         }
                                                     });
                                         }
@@ -466,19 +450,22 @@ public class Activity_Profile extends AppCompatActivity {
                                 });
                             } else {
                                 hideKeyBoard();
-                                invokeToastError1(getResources().getString(R.string.failure1));
+                                createCustomToast(getResources().getString(R.string.failure1), getColor(R.color.error));
+                                //invokeToastError1(getResources().getString(R.string.failure1));
                             }
                         }
                     }).addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
                             hideKeyBoard();
-                            invokeToastError1(getResources().getString(R.string.failure1));
+                            createCustomToast(getResources().getString(R.string.failure1), getColor(R.color.error));
+                            //invokeToastError1(getResources().getString(R.string.failure1));
                         }
                     });
                 } else {
                     hideKeyBoard();
-                    invokeToastError1(getResources().getString(R.string.failure3));
+                    createCustomToast(getResources().getString(R.string.failure3), getColor(R.color.error));
+                    //invokeToastError1(getResources().getString(R.string.failure3));
                 }
                 dialog.dismiss();
             }
@@ -770,20 +757,12 @@ public class Activity_Profile extends AppCompatActivity {
                         sex.setText(user_sex);
                         birthday.setText(user_birthday);
 
-                        mAuth = FirebaseAuth.getInstance();
-                        FirebaseUser user = mAuth.getCurrentUser();
-                        user.reload();
-                        mAuth = FirebaseAuth.getInstance();
-
-                        if (user.isEmailVerified()) {
-                            error_email_auth.setVisibility(View.INVISIBLE);
-                        } else {
-                            error_email_auth.setVisibility(View.VISIBLE);
-                        }
+                        reloadUser();
 
                         progressDialog.dismiss();
                     } else {
-                        invokeToastError1(getResources().getString(R.string.failure2));
+                        createCustomToast(getResources().getString(R.string.failure2), getColor(R.color.error));
+                        //invokeToastError1(getResources().getString(R.string.failure2));
                     }
                 }
 
@@ -792,7 +771,8 @@ public class Activity_Profile extends AppCompatActivity {
                 }
             });
         } else {
-            invokeToastError1(getResources().getString(R.string.failure2));
+            createCustomToast(getResources().getString(R.string.failure2), getColor(R.color.error));
+            //invokeToastError1(getResources().getString(R.string.failure2));
         }
     }
 
@@ -916,13 +896,13 @@ public class Activity_Profile extends AppCompatActivity {
         return false;
     }
 
-    private void invokeToastError1(String errorText) {
-        Toast toast = Toast.makeText(Activity_Profile.this, errorText, Toast.LENGTH_LONG);
+    private void createCustomToast(String message, int color) {
+        Toast toast = Toast.makeText(this, message, Toast.LENGTH_LONG);
         toast.setGravity(Gravity.BOTTOM, 0, 400);
         View view = toast.getView();
         view.getBackground().setColorFilter(getColor(R.color.white), PorterDuff.Mode.SRC_IN);
         TextView text = view.findViewById(android.R.id.message);
-        text.setTextColor(getColor(R.color.error));
+        text.setTextColor(color);
         text.setGravity(Gravity.CENTER);
         toast.show();
     }
@@ -947,4 +927,24 @@ public class Activity_Profile extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        reloadUser();
+    }
+    private void reloadUser() {
+        mAuth = FirebaseAuth.getInstance();
+        FirebaseUser user = mAuth.getCurrentUser();
+
+        if (user != null) {
+            user.reload();
+            mAuth = FirebaseAuth.getInstance();
+
+            if (user.isEmailVerified()) {
+                error_email_auth.setVisibility(View.INVISIBLE);
+            } else {
+                error_email_auth.setVisibility(View.VISIBLE);
+            }
+        }
+    }
 }

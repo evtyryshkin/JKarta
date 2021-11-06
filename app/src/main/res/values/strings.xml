@@ -1,21 +1,48 @@
 <resources>
     <string name="app_name">JKarta</string>
-    <string name="email">Email</string>
-    <string name="password">Пароль</string>
+    <string name="_0">0</string>
+    <string name="_1">1</string>
+    <string name="_2">2</string>
+    <string name="_3">3</string>
+    <string name="_4">4</string>
+    <string name="_5">5</string>
+    <string name="_6">6</string>
+    <string name="_7">7</string>
+    <string name="_8">8</string>
+    <string name="_9">9</string>
+
     <string name="sign_in">Войти</string>
     <string name="sign_up">Зарегистрироваться</string>
     <string name="restore_password">Восстановить пароль</string>
+    <string name="reset_password">Восстановление пароля</string>
+
     <string name="registration">Регистрация</string>
     <string name="profile">Профиль</string>
-    <string name="ready">Готово</string>
+    <string name="home">Главная</string>
+    <string name="cards">Все карты</string>
+    <string name="settings">Настройки</string>
+    <string name="notification">Уведомления</string>
+    <string name="application">Приложение</string>
+
+    <string name="email">Email</string>
+    <string name="password">Пароль</string>
     <string name="login">Логин</string>
     <string name="sex">Пол</string>
     <string name="city">Город</string>
     <string name="birthday">Дата рождения</string>
+    <string name="authorisation">Вход и авторизация</string>
+
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
     <string name="cancel1">Назад</string>
     <string name="cancel2">Отмена</string>
-    <string name="save">Сохранить</string>
+    <string name="ready">Готово</string>
     <string name="next">Далее</string>
+    <string name="exit1">Выход</string>
+    <string name="exit2">Выйти</string>
+    <string name="save">Сохранить</string>
+    <string name="send_again">Отправить</string>
+
     <string name="change_email">Изменить Email</string>
     <string name="enter_email">Введите новый Email</string>
     <string name="enter_password">Введите текущий пароль</string>
@@ -27,68 +54,53 @@
     <string name="man">Мужской</string>
     <string name="woman">Женский</string>
     <string name="change_birthday">Выберите дату рождения</string>
+
     <string name="crop_image_menu_rotate_left">Повернуть налево</string>
     <string name="crop_image_menu_rotate_right">Повернуть направо</string>
     <string name="crop_image_menu_flip_horizontally">Отразить по горизонтали</string>
     <string name="crop_image_menu_flip_vertically">Отразить по вертикали</string>
-    <string name="pick_image_intent_chooser_tittle">ыбрать источник</string>
+    <string name="pick_image_intent_chooser_tittle">Выбрать источник</string>
     <string name="crop_image_menu_crop">Обрезать</string>
-    <string name="_1">1</string>
-    <string name="_2">2</string>
-    <string name="_3">3</string>
-    <string name="_4">4</string>
-    <string name="_5">5</string>
-    <string name="_6">6</string>
-    <string name="_7">7</string>
-    <string name="_8">8</string>
-    <string name="_9">9</string>
-    <string name="exit1">Выход</string>
-    <string name="exit2">Выйти</string>
-    <string name="_0">0</string>
-    <string name="attention_question">Точно хотите выйти?</string>
-    <string name="attention_text">Код сбросится: в приложении нужно будет авторизоваться заново</string>
-    <string name="enter_current_access_code">Текущий код доступа</string>
-    <string name="error_current_access_code">Неверный код доступа, повторите попытку</string>
-    <string name="set_access_code">Задайте код доступа</string>
-    <string name="repeat_access_code">Повторите код доступа</string>
-    <string name="success_access_code">Код доступа успешно задан</string>
-    <string name="cancel_access_code">Код доступа не назначен</string>
-    <string name="remove_access_code">Код доступа сброшен</string>
-    <string name="yes">Да</string>
-    <string name="no">Нет</string>
-    <string name="use_finger_print_for_enter">Использовать отпечаток пальца для входа в приложение?</string>
-    <string name="use_access_code_for_enter">Использовать код доступа для входа в приложение?</string>
-    <string name="cancel_finger_print">Вход по отмечатку пальца не назначен</string>
-    <string name="remove_finger_print">Вход по отпечатку пальца отменен</string>
-    <string name="codes_is_not_coincidence">Коды доступа не совпадают</string>
-    <string name="enter_app">Вход в приложение</string>
-    <string name="add_finger_print">Добавление отпечатка пальца</string>
-    <string name="reset_password">Восстановление пароля</string>
-    <string name="reset_password_toast">На почту направлено письмо для восстановления пароля</string>
+
     <string name="failure1">Ошибка! Попробуйте повторить попытку</string>
     <string name="failure2">Ошибка! Проверьте интернет соединение</string>
     <string name="failure3">Ошибка! Если попытка повториться, приложение перезагрузиться</string>
     <string name="success">Успешно!</string>
     <string name="success_change_password">Пароль успешно изменен</string>
-    <string name="home">Главная</string>
-    <string name="cards">Все карты</string>
-    <string name="settings">Настройки</string>
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="success_change_email">Email успешно изменен</string>
+    <string name="error_current_access_code">Неверный код доступа, повторите попытку</string>
+
+    <string name="enter_current_access_code">Текущий код доступа</string>
+    <string name="set_access_code">Задайте код доступа</string>
+    <string name="repeat_access_code">Повторите код доступа</string>
+    <string name="success_access_code">Код доступа успешно задан</string>
+    <string name="cancel_access_code">Код доступа не назначен</string>
+    <string name="remove_access_code">Код доступа сброшен</string>
+    <string name="codes_is_not_coincidence">Коды доступа не совпадают</string>
+    <string name="cancel_finger_print">Вход по отмечатку пальца не назначен</string>
+    <string name="remove_finger_print">Вход по отпечатку пальца отменен</string>
+    <string name="add_finger_print">Добавление отпечатка пальца</string>
+    <string name="enter_app">Вход в приложение</string>
+
+    <string name="attention_question">Точно хотите выйти?</string>
+    <string name="attention_text">Код сбросится: в приложении нужно будет авторизоваться заново</string>
+    <string name="use_finger_print_for_enter">Использовать отпечаток пальца для входа в приложение?</string>
+    <string name="use_access_code_for_enter">Использовать код доступа для входа в приложение?</string>
+    <string name="reset_password_toast">На почту направлено письмо для восстановления пароля</string>
+
     <string name="settings_profile">Настройки профиля</string>
-    <string name="authorisation">Вход и авторизация</string>
     <string name="settings_authorisation">Настройки пароля, входа по отпечатку и коду доступа</string>
-    <string name="notification">Уведомления</string>
     <string name="settings_notification">Настройки push-уведомлений</string>
-    <string name="application">Приложение</string>
     <string name="settings_application">Настройки приложения</string>
+
     <string name="attention_auth">Необходимо авторизоваться</string>
     <string name="attention_auth_text">Для подтверждения электронной почты вам будет направлено сообщение на указанный Email</string>
-    <string name="send_again">Отправить</string>
     <string name="settings_password">Введите новый пароль</string>
     <string name="access_code">Код доступа</string>
     <string name="settings_access_code">Изменить код доступа</string>
     <string name="biometric">Биометрия</string>
     <string name="settings_biometric">Настроить вход по отпечатку пальца</string>
-    <string name="change_password_toast">На почту направлено письмо для изменения пароля</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
 </resources>

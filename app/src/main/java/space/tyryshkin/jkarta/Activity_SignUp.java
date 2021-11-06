@@ -82,6 +82,7 @@ public class Activity_SignUp extends AppCompatActivity {
     private void onClicks() {
         btn_back.setOnClickListener(view -> {
             Intent intent = new Intent(getApplicationContext(), Activity_SignIn.class);
+            intent.putExtra("FROM_ACTIVITY", "Activity_SignUp");
             startActivity(intent);
         });
 
@@ -127,14 +128,7 @@ public class Activity_SignUp extends AppCompatActivity {
                             startActivity(intent);
 
                         } else {
-                            Toast toast = Toast.makeText(Activity_SignUp.this, getResources().getString(R.string.failure2), Toast.LENGTH_LONG);
-                            toast.setGravity(Gravity.TOP, 0, 400);
-                            View view = toast.getView();
-                            view.getBackground().setColorFilter(getColor(R.color.white), PorterDuff.Mode.SRC_IN);
-                            TextView text = view.findViewById(android.R.id.message);
-                            text.setTextColor(getColor(R.color.error));
-                            text.setGravity(Gravity.CENTER);
-                            toast.show();
+                            createCustomToast(getResources().getString(R.string.failure2), getColor(R.color.error));
                         }
                     }
                 });
@@ -244,6 +238,16 @@ public class Activity_SignUp extends AppCompatActivity {
 
             }
         });
+    }
+    private void createCustomToast(String message, int color) {
+        Toast toast = Toast.makeText(this, message, Toast.LENGTH_LONG);
+        toast.setGravity(Gravity.BOTTOM, 0, 400);
+        View view = toast.getView();
+        view.getBackground().setColorFilter(getColor(R.color.white), PorterDuff.Mode.SRC_IN);
+        TextView text = view.findViewById(android.R.id.message);
+        text.setTextColor(color);
+        text.setGravity(Gravity.CENTER);
+        toast.show();
     }
 
     public void hideKeyBoard() {

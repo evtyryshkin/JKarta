@@ -399,6 +399,7 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
                         }
                     } catch (Exception e) {
                         Intent intent = new Intent(Activity_Pin_Code_Enter.this, Activity_SignIn.class);
+                        intent.putExtra("FROM_ACTIVITY", "Activity_Pin_Code_Enter");
                         startActivity(intent);
                     }
                 }
@@ -430,6 +431,7 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
             editor.apply();
 
             Intent intent = new Intent(Activity_Pin_Code_Enter.this, Activity_SignIn.class);
+            intent.putExtra("FROM_ACTIVITY", "Activity_Pin_Code_Enter");
             startActivity(intent);
         });
 

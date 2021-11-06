@@ -60,7 +60,6 @@
     <string name="use_access_code_for_enter">Использовать код доступа для входа в приложение?</string>
     <string name="cancel_finger_print">Вход по отмечатку пальца не назначен</string>
     <string name="remove_finger_print">Вход по отпечатку пальца отменен</string>
-    <string name="success">Успешно!</string>
     <string name="codes_is_not_coincidence">Коды доступа не совпадают</string>
     <string name="enter_app">Вход в приложение</string>
     <string name="add_finger_print">Добавление отпечатка пальца</string>
@@ -69,6 +68,8 @@
     <string name="failure1">Ошибка! Попробуйте повторить попытку</string>
     <string name="failure2">Ошибка! Проверьте интернет соединение</string>
     <string name="failure3">Ошибка! Если попытка повториться, приложение перезагрузиться</string>
+    <string name="success">Успешно!</string>
+    <string name="success_change_password">Пароль успешно изменен</string>
     <string name="home">Главная</string>
     <string name="cards">Все карты</string>
     <string name="settings">Настройки</string>
@@ -84,7 +85,7 @@
     <string name="attention_auth">Необходимо авторизоваться</string>
     <string name="attention_auth_text">Для подтверждения электронной почты вам будет направлено сообщение на указанный Email</string>
     <string name="send_again">Отправить</string>
-    <string name="settings_password">Изменить пароль</string>
+    <string name="settings_password">Введите новый пароль</string>
     <string name="access_code">Код доступа</string>
     <string name="settings_access_code">Изменить код доступа</string>
     <string name="biometric">Биометрия</string>

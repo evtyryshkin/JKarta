@@ -152,40 +152,24 @@ public class Activity_Security extends AppCompatActivity {
         TextInputLayout password_layout = dialog.findViewById(R.id.password_layout);
         TextInputEditText password_edit = dialog.findViewById(R.id.password_edit);
         MaterialButton cancel = dialog.findViewById(R.id.btn_cancel);
-        MaterialButton next = dialog.findViewById(R.id.btn_next);
+        MaterialButton save = dialog.findViewById(R.id.btn_save);
 
-        password_edit.setText(mAuth.getCurrentUser().getEmail());
-
-        next.setOnClickListener(view -> {
-            onChanges(password_layout, password_edit, next);
+        save.setOnClickListener(view -> {
+            onChanges(password_layout, password_edit, save);
             String mail = password_edit.getText().toString();
 
-            if (checkValidateEmail2(password_layout, password_edit, next)) {
-                mAuth.sendPasswordResetEmail(mail).addOnSuccessListener(new OnSuccessListener<Void>() {
+            if (checkValidatePassword(password_layout, password_edit, save)) {
+                mAuth.getCurrentUser().updatePassword(mail).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
                         dialog.dismiss();
-                        hideKeyBoard();
-                        Toast toast = Toast.makeText(Activity_Security.this, getResources().getString(R.string.change_password_toast), Toast.LENGTH_LONG);
-                        toast.setGravity(Gravity.BOTTOM, 0, 400);
-                        View view = toast.getView();
-                        view.getBackground().setColorFilter(getColor(R.color.white), PorterDuff.Mode.SRC_IN);
-                        TextView text = view.findViewById(android.R.id.message);
-                        text.setTextColor(getColor(R.color.teal_500));
-                        text.setGravity(Gravity.CENTER);
-                        toast.show();
+                        createCustomToast(getResources().getString(R.string.success_change_password), getColor(R.color.teal_500));
                     }
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Toast toast = Toast.makeText(Activity_Security.this, getResources().getString(R.string.failure2), Toast.LENGTH_LONG);
-                        toast.setGravity(Gravity.BOTTOM, 0, 400);
-                        View view = toast.getView();
-                        view.getBackground().setColorFilter(getColor(R.color.white), PorterDuff.Mode.SRC_IN);
-                        TextView text = view.findViewById(android.R.id.message);
-                        text.setTextColor(getColor(R.color.error));
-                        text.setGravity(Gravity.CENTER);
-                        toast.show();
+                        dialog.dismiss();
+                        createCustomToast(getResources().getString(R.string.failure1), getColor(R.color.error));
                     }
                 });
             }
@@ -196,15 +180,15 @@ public class Activity_Security extends AppCompatActivity {
         dialog.show();
     }
 
-    private void onChanges(TextInputLayout email_layout, EditText email_edit, MaterialButton next) {
-        email_edit.addTextChangedListener(new TextWatcher() {
+    private void onChanges(TextInputLayout password_layout, EditText password_edit, MaterialButton next) {
+        password_edit.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
             }
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                checkValidateEmail2(email_layout, email_edit, next);
+                checkValidatePassword(password_layout, password_edit, next);
             }
 
             @Override
@@ -213,22 +197,18 @@ public class Activity_Security extends AppCompatActivity {
         });
     }
 
-    private boolean checkValidateEmail2(TextInputLayout email_layout, EditText edit, MaterialButton next) {
-        if (Objects.requireNonNull(edit.getText()).toString().equals("")) {
-            email_layout.setError("Поле обязательно для заполнения");
-            next.setEnabled(false);
+    private boolean checkValidatePassword(TextInputLayout password_layout, EditText password_edit, MaterialButton save) {
+        String password = password_edit.getText().toString();
+        if (password.equals("")) {
+            password_layout.setError("Поле обязательно для заполнения");
+            save.setEnabled(false);
             return false;
-        } else if (!isEmailValid(edit.getText().toString())) {
-            email_layout.setError("Пример: mail@example.com");
-            next.setEnabled(false);
-            return false;
-        } else if (!mAuth.getCurrentUser().getEmail().equals(edit.getText().toString())) {
-            email_layout.setError("Вы авторизованы под другим Email");
-            next.setEnabled(false);
+        } else if (password.length() < 6) {
+            password_layout.setError("Минимум 6 символов");
+            save.setEnabled(false);
             return false;
         } else {
-            email_layout.setError(null);
-            next.setEnabled(true);
+            password_layout.setError(null);
             return true;
         }
     }
@@ -361,15 +341,6 @@ public class Activity_Security extends AppCompatActivity {
         text.setTextColor(color);
         text.setGravity(Gravity.CENTER);
         toast.show();
-    }
-
-    public void hideKeyBoard() {
-        View keyBoard = this.getCurrentFocus();
-        if (keyBoard != null) {
-            InputMethodManager inputMethodManager = (InputMethodManager) this.getSystemService(INPUT_METHOD_SERVICE);
-            assert inputMethodManager != null;
-            inputMethodManager.hideSoftInputFromWindow(keyBoard.getWindowToken(), 0);
-        }
     }
 
     @Override

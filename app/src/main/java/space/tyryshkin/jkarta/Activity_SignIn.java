@@ -57,12 +57,14 @@ public class Activity_SignIn extends AppCompatActivity {
     private DatabaseReference userDataBase;
     private String USER_KEY = "users";
 
-    private ArrayList<String> listOfEmail = new ArrayList<>();
+    private final ArrayList<String> listOfEmail = new ArrayList<>();
 
     private SharedPreferences sharedPreferences;
     private androidx.biometric.BiometricManager biometricManager;
     private BiometricPrompt biometricPrompt;
     private boolean isHasFingerprint;
+
+    private String FROM_ACTIVITY = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +76,8 @@ public class Activity_SignIn extends AppCompatActivity {
     }
 
     public void init() {
+        FROM_ACTIVITY = getIntent().getStringExtra("FROM_ACTIVITY");
+
         email_layout = findViewById(R.id.email_layout);
         password_layout = findViewById(R.id.password_layout);
         email_edit = findViewById(R.id.email_edit);
@@ -86,12 +90,16 @@ public class Activity_SignIn extends AppCompatActivity {
         currentUser = mAuth.getCurrentUser();
         userDataBase = FirebaseDatabase.getInstance().getReference(USER_KEY);
 
-        sharedPreferences = getSharedPreferences((currentUser).getUid(), MODE_PRIVATE);
-        biometricManager = androidx.biometric.BiometricManager.from(getApplicationContext());
-        isHasFingerprint = sharedPreferences.getBoolean(Model_User.PREFERENCES_IS_HAS_FINGERPRINT, false);
-        if (biometricManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK)
-                == BiometricManager.BIOMETRIC_SUCCESS && isHasFingerprint) {
-            invokeDialogFingerprint();
+        if (!FROM_ACTIVITY.equals("Activity_Profile") && !FROM_ACTIVITY.equals("Activity_SignUp")) {
+            if (currentUser != null) {
+                sharedPreferences = getSharedPreferences((currentUser).getUid(), MODE_PRIVATE);
+                biometricManager = androidx.biometric.BiometricManager.from(getApplicationContext());
+                isHasFingerprint = sharedPreferences.getBoolean(Model_User.PREFERENCES_IS_HAS_FINGERPRINT, false);
+                if (biometricManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK)
+                        == BiometricManager.BIOMETRIC_SUCCESS && isHasFingerprint) {
+                    invokeDialogFingerprint();
+                }
+            }
         }
 
         findAllEmail();
@@ -149,33 +157,23 @@ public class Activity_SignIn extends AppCompatActivity {
             String mail = edit.getText().toString();
 
             if (checkValidateEmail2(email_layout, edit, next)) {
-                mAuth.sendPasswordResetEmail(mail).addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        dialog.dismiss();
-                        hideKeyBoard();
-                        Toast toast = Toast.makeText(Activity_SignIn.this, getResources().getString(R.string.reset_password_toast), Toast.LENGTH_LONG);
-                        toast.setGravity(Gravity.TOP, 0, 400);
-                        View view = toast.getView();
-                        view.getBackground().setColorFilter(getColor(R.color.white), PorterDuff.Mode.SRC_IN);
-                        TextView text = view.findViewById(android.R.id.message);
-                        text.setTextColor(getColor(R.color.teal_500));
-                        text.setGravity(Gravity.CENTER);
-                        toast.show();
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast toast = Toast.makeText(Activity_SignIn.this, getResources().getString(R.string.failure2), Toast.LENGTH_LONG);
-                        toast.setGravity(Gravity.TOP, 0, 400);
-                        View view = toast.getView();
-                        view.getBackground().setColorFilter(getColor(R.color.white), PorterDuff.Mode.SRC_IN);
-                        TextView text = view.findViewById(android.R.id.message);
-                        text.setTextColor(getColor(R.color.error));
-                        text.setGravity(Gravity.CENTER);
-                        toast.show();
-                    }
-                });
+                if (mAuth != null) {
+                    mAuth.sendPasswordResetEmail(mail).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            dialog.dismiss();
+                            hideKeyBoard();
+                            createCustomToast(getResources().getString(R.string.reset_password_toast), getColor(R.color.teal_500));
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            dialog.dismiss();
+                            hideKeyBoard();
+                            createCustomToast(getResources().getString(R.string.failure2), getColor(R.color.error));
+                        }
+                    });
+                }
             }
         });
 
@@ -264,6 +262,16 @@ public class Activity_SignIn extends AppCompatActivity {
 
         windowParams.gravity = Gravity.BOTTOM;
         window.setAttributes(windowParams);
+    }
+    private void createCustomToast(String message, int color) {
+        Toast toast = Toast.makeText(this, message, Toast.LENGTH_LONG);
+        toast.setGravity(Gravity.BOTTOM, 0, 400);
+        View view = toast.getView();
+        view.getBackground().setColorFilter(getColor(R.color.white), PorterDuff.Mode.SRC_IN);
+        TextView text = view.findViewById(android.R.id.message);
+        text.setTextColor(color);
+        text.setGravity(Gravity.CENTER);
+        toast.show();
     }
 
     @SuppressLint("WrongConstant")

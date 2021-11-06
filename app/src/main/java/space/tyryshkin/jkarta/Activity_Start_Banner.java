@@ -94,6 +94,7 @@ public class Activity_Start_Banner extends AppCompatActivity {
             intent = new Intent(Activity_Start_Banner.this, Activity_Pin_Code_Enter.class);
         } else {
             intent = new Intent(Activity_Start_Banner.this, Activity_SignIn.class);
+            intent.putExtra("FROM_ACTIVITY", "Activity_Start_Banner");
         }
         startActivity(intent);
     }

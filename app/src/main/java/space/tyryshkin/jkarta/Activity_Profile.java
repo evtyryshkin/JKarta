@@ -192,6 +192,7 @@ public class Activity_Profile extends AppCompatActivity {
         });
         btn_exit.setOnClickListener(view -> {
             Intent intent = new Intent(Activity_Profile.this, Activity_SignIn.class);
+            intent.putExtra("FROM_ACTIVITY", "Activity_Profile");
             startActivity(intent);
         });
         error_email_auth.setOnClickListener(view -> {

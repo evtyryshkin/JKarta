@@ -19,10 +19,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
 import android.text.TextUtils;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
@@ -415,6 +417,8 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
     private void openDialogExit() {
         Dialog dialog = createDialog();
 
+        placeDialogBottom(dialog);
+
         MaterialButton cancel = dialog.findViewById(R.id.btn_cancel);
         MaterialButton save = dialog.findViewById(R.id.btn_save);
 
@@ -443,6 +447,14 @@ public class Activity_Pin_Code_Enter extends AppCompatActivity {
         dialog.setCancelable(false);
 
         return dialog;
+    }
+
+    private void placeDialogBottom(Dialog dialog) {
+        Window window = dialog.getWindow();
+        WindowManager.LayoutParams windowParams = window.getAttributes();
+
+        windowParams.gravity = Gravity.BOTTOM;
+        window.setAttributes(windowParams);
     }
 
     @SuppressLint("WrongConstant")
